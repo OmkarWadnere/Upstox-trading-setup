@@ -1,0 +1,1 @@
+# Upstox-trading-setup
