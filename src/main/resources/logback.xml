@@ -1,0 +1,33 @@
+<configuration>
+
+    <!-- Console Appender Configuration -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{dd-MMM-yyyy HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </layout>
+    </appender>
+
+    <!-- File Appender Configuration -->
+    <appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>Upstox-trading-setup/logs/broker_%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>100</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{dd-MMM-yyyy HH:mm:ss} [%t] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger Configuration -->
+    <root level="ERROR">
+        <appender-ref ref="Console" />
+        <appender-ref ref="File" />
+    </root>
+
+    <!-- Logger Configuration for the com.upstox package -->
+    <logger name="com.upstox" level="DEBUG">
+        <appender-ref ref="Console" />
+        <appender-ref ref="File" />
+    </logger>
+
+</configuration>

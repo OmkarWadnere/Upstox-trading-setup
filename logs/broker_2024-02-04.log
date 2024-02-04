@@ -1,0 +1,152 @@
+04-Feb-2024 14:03:01 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 17744 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 14:03:01 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 17744 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 14:03:01 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 14:03:01 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 14:03:01 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 14:03:01 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 14:03:09 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 8.469 seconds (JVM running for 9.641)
+04-Feb-2024 14:03:09 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 8.469 seconds (JVM running for 9.641)
+04-Feb-2024 15:01:11 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 8960 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:01:11 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 8960 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:01:11 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:01:11 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:01:11 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:01:11 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:01:22 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 11.709 seconds (JVM running for 13.24)
+04-Feb-2024 15:01:22 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 11.709 seconds (JVM running for 13.24)
+04-Feb-2024 15:10:26 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:10:26 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:10:26 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:10:26 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:12:30 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 2848 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:12:30 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 2848 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:12:30 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:12:30 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:12:30 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:12:30 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:12:39 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.612 seconds (JVM running for 10.813)
+04-Feb-2024 15:12:39 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.612 seconds (JVM running for 10.813)
+04-Feb-2024 15:13:11 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:13:11 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:13:11 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:13:11 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:15:26 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 8532 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:15:26 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 8532 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:15:26 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:15:26 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:15:26 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:15:26 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:15:34 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.718 seconds (JVM running for 11.87)
+04-Feb-2024 15:15:34 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.718 seconds (JVM running for 11.87)
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:15:48 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:16:29 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:16:29 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:16:39 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:16:39 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:17:35 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:17:35 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:17:51 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:17:51 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:19:17 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 19540 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:19:17 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 19540 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:19:17 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:19:17 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:19:17 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:19:17 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:19:28 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 11.241 seconds (JVM running for 12.745)
+04-Feb-2024 15:19:28 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 11.241 seconds (JVM running for 12.745)
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:19:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:25:05 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 21836 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:25:05 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 21836 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:25:05 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:25:05 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:25:05 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:25:05 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:25:14 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.97 seconds (JVM running for 11.413)
+04-Feb-2024 15:25:14 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.97 seconds (JVM running for 11.413)
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:25:19 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:30:56 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:13 [http-nio-80-exec-6] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:32:45 [http-nio-80-exec-8] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:33:24 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 1304 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:33:24 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 1304 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:33:24 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:33:24 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:33:24 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:33:24 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:33:31 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 8.181 seconds (JVM running for 9.413)
+04-Feb-2024 15:33:31 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 8.181 seconds (JVM running for 9.413)
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:33:47 [http-nio-80-exec-2] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:34:21 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 3564 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:34:21 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Starting UpstoxTradingSetupApplication using Java 11.0.14 on LAPTOP-N59QMNVE with PID 3564 (E:\Upstox Integration\Upstox-trading-setup\target\classes started by omkar in E:\Upstox Integration)
+04-Feb-2024 15:34:21 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:34:21 [restartedMain] DEBUG c.u.UpstoxTradingSetupApplication - Running with Spring Boot v2.6.0, Spring v5.3.13
+04-Feb-2024 15:34:21 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:34:21 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - No active profile set, falling back to default profiles: default
+04-Feb-2024 15:34:30 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.266 seconds (JVM running for 10.456)
+04-Feb-2024 15:34:30 [restartedMain] INFO  c.u.UpstoxTradingSetupApplication - Started UpstoxTradingSetupApplication in 9.266 seconds (JVM running for 10.456)
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:34:32 [http-nio-80-exec-1] ERROR c.u.production.Logging.LoggingAspect - Index 1 out of bounds for length 1
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Buy Order Request process has started
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] INFO  c.u.p.service.BuyOrderService - Convert order_name into separate JsoneNode
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - For input string: "\46185"
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - For input string: "\46185"
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - For input string: "\46185"
+04-Feb-2024 15:37:34 [http-nio-80-exec-4] ERROR c.u.production.Logging.LoggingAspect - For input string: "\46185"
