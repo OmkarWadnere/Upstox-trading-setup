@@ -1,7 +1,6 @@
 package com.upstox.production.service;
 
 import com.upstox.production.dto.FutureMapperRequestDto;
-import com.upstox.production.entity.FutureMapping;
 import com.upstox.production.entity.NextFutureMapping;
 import com.upstox.production.excpetion.UpstoxException;
 import com.upstox.production.repository.FutureMappingRepository;
@@ -39,14 +38,14 @@ public class NextFutureMapperService {
         if (optionalNextFutureMappingExpiryDate.isPresent()) {
             throw new UpstoxException("The provided Expiry Date already exists");
         }
-        Optional<FutureMapping> optionalFutureMappingInstrumentToken = futureMappingRepository.findByInstrumentToken(futureMapperRequestDto.getInstrument_token());
-        if (optionalFutureMappingInstrumentToken.isPresent()) {
-            throw new UpstoxException("The provided instrument_token already exists in future mapper use next expiry for next future mapping");
-        }
-        Optional<FutureMapping> optionalFutureMappingExpiryDate = futureMappingRepository.findByExpiryDate(futureMapperRequestDto.getExpiry_date());
-        if (optionalFutureMappingExpiryDate.isPresent()) {
-            throw new UpstoxException("The provided Expiry Date already exists in future mapper use next expiry for next future mapping");
-        }
+//        Optional<FutureMapping> optionalFutureMappingInstrumentToken = futureMappingRepository.findByInstrumentToken(futureMapperRequestDto.getInstrument_token());
+//        if (optionalFutureMappingInstrumentToken.isPresent()) {
+//            throw new UpstoxException("The provided instrument_token already exists in future mapper use next expiry for next future mapping");
+//        }
+//        Optional<FutureMapping> optionalFutureMappingExpiryDate = futureMappingRepository.findByExpiryDate(futureMapperRequestDto.getExpiry_date());
+//        if (optionalFutureMappingExpiryDate.isPresent()) {
+//            throw new UpstoxException("The provided Expiry Date already exists in future mapper use next expiry for next future mapping");
+//        }
     }
 
     public NextFutureMapping nextFutureMappingBuilder(FutureMapperRequestDto futureMapperRequestDto) {

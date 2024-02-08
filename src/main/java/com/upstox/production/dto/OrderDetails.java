@@ -3,8 +3,6 @@ package com.upstox.production.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 
 @Getter
 @Setter
@@ -81,10 +79,10 @@ public class OrderDetails {
         private String variety;
 
         @JsonProperty("order_timestamp")
-        private LocalDateTime orderTimestamp;
+        private String orderTimestamp;
 
         @JsonProperty("exchange_timestamp")
-        private LocalDateTime exchangeTimestamp;
+        private String exchangeTimestamp;
 
         @JsonProperty("is_amo")
         private boolean isAmo;
@@ -94,4 +92,17 @@ public class OrderDetails {
 
         @JsonProperty("order_ref_id")
         private String orderRefId;
+
+        @JsonProperty("guid")
+        private String guid;
+
+        @JsonProperty("status_message")
+        private String status_message;
+
+        @JsonProperty("status_message_raw")
+        private String status_message_raw;
+
+        @JsonProperty("errors")
+        private String errors;
+
 }

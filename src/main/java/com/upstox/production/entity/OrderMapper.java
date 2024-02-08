@@ -1,7 +1,6 @@
 package com.upstox.production.entity;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,6 +10,9 @@ import javax.persistence.Id;
 @Entity
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class OrderMapper {
 
     @Id
