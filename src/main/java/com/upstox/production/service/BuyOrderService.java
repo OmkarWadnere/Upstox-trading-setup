@@ -124,8 +124,9 @@ public class BuyOrderService {
                 if (orderRequestDto.getTransaction_type().equalsIgnoreCase("BUY") && positionDataDto.getQuantity() != 0) {
                     log.info("Exiting from previous SELL trade order : " + orderRequestDto);
                     String transaction_type = orderRequestDto.getTransaction_type();
+                    int quantity = positionDataDto.getQuantity() < 0 ? positionDataDto.getQuantity() * -1 : positionDataDto.getQuantity();
                     String requestBody = "{"
-                            + "\"quantity\": " + positionDataDto.getQuantity() + ","
+                            + "\"quantity\": " + quantity + ","
                             + "\"product\": \"D\","
                             + "\"validity\": \"DAY\","
                             + "\"price\": 0,"
@@ -155,9 +156,9 @@ public class BuyOrderService {
                 } else if (orderRequestDto.getTransaction_type().equalsIgnoreCase("SELL") && positionDataDto.getQuantity() != 0) {
                     log.info("Exiting from previous BUY trade order : " + orderRequestDto);
                     String transaction_type = orderRequestDto.getTransaction_type();
-
+                    int quantity = positionDataDto.getQuantity() < 0 ? positionDataDto.getQuantity() * -1 : positionDataDto.getQuantity();
                     String requestBody = "{"
-                            + "\"quantity\": " + positionDataDto.getQuantity() + ","
+                            + "\"quantity\": " + quantity + ","
                             + "\"product\": \"D\","
                             + "\"validity\": \"DAY\","
                             + "\"price\": 0,"
@@ -196,7 +197,7 @@ public class BuyOrderService {
         Double receivedEntryPrice = orderRequestDto.getEntryPrice();
         double placeOrderEntryPrice = Math.round(receivedEntryPrice / MULTIPLIER) * MULTIPLIER;
         String requestBody = "{"
-                + "\"quantity\": "+ orderRequestDto.getQuantity() + ","
+                + "\"quantity\": "+ futureMapping.getQuantity() + ","
                 + "\"product\": \"D\","
                 + "\"validity\": \"DAY\","
                 + "\"price\": "+ placeOrderEntryPrice + ","
