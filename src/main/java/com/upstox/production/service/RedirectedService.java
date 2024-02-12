@@ -46,6 +46,7 @@ public class RedirectedService {
         } else {
             upstoxLogin = buildUpstoxLogin(upstoxLoginDto);
         }
+        System.out.println(upstoxLogin);
         return upstoxLoginRepository.save(upstoxLogin);
     }
 
@@ -54,7 +55,7 @@ public class RedirectedService {
                 .email(response.getObject().get("email").toString())
                 .access_token(response.getObject().get("access_token").toString())
                 .is_active(Boolean.parseBoolean(response.getObject().get("is_active").toString()))
-                .user_id(Integer.parseInt(response.getObject().get("user_id").toString()))
+                .user_id(response.getObject().get("user_id").toString())
                 .user_type(response.getObject().get("user_type").toString())
                 .user_name(response.getObject().get("user_name").toString()).build();
     }
