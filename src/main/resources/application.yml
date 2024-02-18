@@ -1,17 +1,17 @@
-#server:
-#  port: 443
-#  ssl:
-#    key-store: keystore.p12
-#    key-store-password: Root@123
-#    keyStoreType: PKCS12
-#    keyAlias: tomcat
+server:
+  port: 443
+  ssl:
+    key-store: keystore.p12
+    key-store-password: Root@123
+    keyStoreType: PKCS12
+    keyAlias: tomcat
 spring:
   application:
     name: PERSONAL-BROKER
   datasource:
     url: jdbc:mysql://localhost:3306/broker?autoReconnect=true&useSSL=false
     username: root
-    password: root
+    password: Root@123
   jpa:
     hibernate:
       ddl-auto: update
