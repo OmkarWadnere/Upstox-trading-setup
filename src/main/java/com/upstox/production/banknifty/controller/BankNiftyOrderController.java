@@ -29,6 +29,6 @@ public class BankNiftyOrderController {
     public String BankNiftyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
                                           @RequestBody String bankNiftyPayload) throws UpstoxException, IOException, UnirestException, InterruptedException {
         log.info("Data received to place order is : " + bankNiftyPayload);
-        return bankNiftyOrderService.BurOrderExecution(bankNiftyPayload);
+        return bankNiftyOrderService.buyOrderExecution(bankNiftyPayload);
     }
 }

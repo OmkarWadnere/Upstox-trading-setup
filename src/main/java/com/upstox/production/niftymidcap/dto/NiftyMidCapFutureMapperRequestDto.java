@@ -1,4 +1,4 @@
-package com.upstox.production.idea.dto;
+package com.upstox.production.niftymidcap.dto;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class IdeaFutureMapperRequestDto {
+public class NiftyMidCapFutureMapperRequestDto {
 
     private String instrument_token;
     private LocalDate expiry_date;

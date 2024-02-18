@@ -1,4 +1,4 @@
-package com.upstox.production.idea.entity;
+package com.upstox.production.niftymidcap.entity;
 
 import lombok.*;
 
@@ -13,7 +13,7 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class IdeaOrderMapper {
+public class NiftyMidCapOrderMapper {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

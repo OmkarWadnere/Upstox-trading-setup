@@ -1,4 +1,4 @@
-package com.upstox.production.idea.service;
+package com.upstox.production.niftymidcap.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,12 +9,12 @@ import com.upstox.production.centralconfiguration.dto.*;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
-import com.upstox.production.idea.entity.IdeaFutureMapping;
-import com.upstox.production.idea.entity.IdeaNextFutureMapping;
-import com.upstox.production.idea.entity.IdeaOrderMapper;
-import com.upstox.production.idea.repository.IdeaFutureMappingRepository;
-import com.upstox.production.idea.repository.IdeaNextFutureMapperRepository;
-import com.upstox.production.idea.repository.IdeaOrderMapperRepository;
+import com.upstox.production.niftymidcap.entity.NiftyMidCapFutureMapping;
+import com.upstox.production.niftymidcap.entity.NiftyMidCapNextFutureMapping;
+import com.upstox.production.niftymidcap.entity.NiftyMidCapOrderMapper;
+import com.upstox.production.niftymidcap.repository.NiftyMidCapFutureMappingRepository;
+import com.upstox.production.niftymidcap.repository.NiftyMidCapNextFutureMapperRepository;
+import com.upstox.production.niftymidcap.repository.NiftyMidCapOrderMapperRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +33,9 @@ import java.util.*;
 
 @Service
 @PropertySource("classpath:data.properties")
-public class IdeaOrderService {
+public class NiftyMidCapOrderService {
 
-    private static final Log log = LogFactory.getLog(IdeaOrderService.class);
+    private static final Log log = LogFactory.getLog(NiftyMidCapOrderService.class);
 
     private static final Double MULTIPLIER = 0.05;
 
@@ -46,15 +46,15 @@ public class IdeaOrderService {
     private UpstoxLoginRepository upstoxLoginRepository;
 
     @Autowired
-    private IdeaFutureMappingRepository ideaFutureMappingRepository;
+    private NiftyMidCapFutureMappingRepository niftyMidCapFutureMappingRepository;
 
     @Autowired
-    private IdeaOrderMapperRepository ideaOrderMapperRepository;
+    private NiftyMidCapOrderMapperRepository niftyMidCapOrderMapperRepository;
 
     @Autowired
-    private IdeaNextFutureMapperRepository ideaNextFutureMapperRepository;
+    private NiftyMidCapNextFutureMapperRepository niftyMidCapNextFutureMapperRepository;
 
-    public String BurOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
+    public String buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         // Process buy order Request Data
         OrderRequestDto orderRequestDto = processBuyOrderRequestData(requestData);
@@ -80,25 +80,25 @@ public class IdeaOrderService {
     }
 
     public void updateFutureMapper(OrderRequestDto orderRequestDto) throws UpstoxException {
-        IdeaFutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        NiftyMidCapFutureMapping futureMapping = getFutureMapping(orderRequestDto);
         LocalTime twelvePM = LocalTime.of(12, 0);
         if (futureMapping.getExpiryDate().equals(LocalDate.now()) && (LocalTime.now().isAfter(twelvePM) || LocalTime.now().equals(twelvePM))) {
-            Optional<IdeaNextFutureMapping> nextFutureMappingsOptional = ideaNextFutureMapperRepository.findBySymbolName(orderRequestDto.getInstrument_name());
+            Optional<NiftyMidCapNextFutureMapping> nextFutureMappingsOptional = niftyMidCapNextFutureMapperRepository.findBySymbolName(orderRequestDto.getInstrument_name());
             log.info("Here we came");
             if (nextFutureMappingsOptional.isEmpty()) {
                 log.info("Future mapping has be already done or you forgot to add upcoming future mapping please check by adding nextFutureMapping the date you are expecting");
                 return;
             }
             log.info("Next Future data recived : " + nextFutureMappingsOptional.get());
-            ideaFutureMappingRepository.deleteById(futureMapping.getId());
+            niftyMidCapFutureMappingRepository.deleteById(futureMapping.getId());
 
-            IdeaFutureMapping futureMappingToNextExpiryAfter12Pm = IdeaFutureMapping.builder()
+            NiftyMidCapFutureMapping futureMappingToNextExpiryAfter12Pm = NiftyMidCapFutureMapping.builder()
                     .expiryDate(nextFutureMappingsOptional.get().getExpiryDate())
                     .symbolName(nextFutureMappingsOptional.get().getSymbolName())
                     .instrumentToken(nextFutureMappingsOptional.get().getInstrumentToken())
                     .quantity(nextFutureMappingsOptional.get().getQuantity()).build();
-            futureMappingToNextExpiryAfter12Pm = ideaFutureMappingRepository.save(futureMappingToNextExpiryAfter12Pm);
-            ideaNextFutureMapperRepository.deleteById(nextFutureMappingsOptional.get().getId());
+            futureMappingToNextExpiryAfter12Pm = niftyMidCapFutureMappingRepository.save(futureMappingToNextExpiryAfter12Pm);
+            niftyMidCapNextFutureMapperRepository.deleteById(nextFutureMappingsOptional.get().getId());
             log.info("The current future expiry has been added successfully !! " + futureMappingToNextExpiryAfter12Pm);
         }
     }
@@ -117,7 +117,7 @@ public class IdeaOrderService {
         }
 
         // Check particular symbol is available in futureMapping or not
-        IdeaFutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        NiftyMidCapFutureMapping futureMapping = getFutureMapping(orderRequestDto);
 
         for (GetPositionDataDto positionDataDto : getPositionResponseDto.getData()) {
             if (positionDataDto.getInstrumentToken().equalsIgnoreCase(futureMapping.getInstrumentToken())) {
@@ -193,7 +193,7 @@ public class IdeaOrderService {
 
         log.info("Plcing the new Entry order for : " + orderRequestDto);
 
-        IdeaFutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        NiftyMidCapFutureMapping futureMapping = getFutureMapping(orderRequestDto);
         Double receivedEntryPrice = orderRequestDto.getEntryPrice();
         double placeOrderEntryPrice = Math.round(receivedEntryPrice / MULTIPLIER) * MULTIPLIER;
         String requestBody = "{"
@@ -231,26 +231,26 @@ public class IdeaOrderService {
         log.info("Response Body received from server after placing new order: " + receiveNewOrderResponse.body());
         ObjectMapper objectMapper = new ObjectMapper();
         OrderResponse orderResponse = objectMapper.readValue(receiveNewOrderResponse.body(), OrderResponse.class);
-        IdeaOrderMapper ideaOrderMapper = IdeaOrderMapper.builder().orderId(orderResponse.getData().getOrderId()).build();
-        ideaOrderMapperRepository.deleteAll();
-        return ideaOrderMapperRepository.save(ideaOrderMapper).toString();
+        NiftyMidCapOrderMapper niftyMidCapOrderMapper = NiftyMidCapOrderMapper.builder().orderId(orderResponse.getData().getOrderId()).build();
+        niftyMidCapOrderMapperRepository.deleteAll();
+        return niftyMidCapOrderMapperRepository.save(niftyMidCapOrderMapper).toString();
     }
 
     public void cancelAllPreviousOrder(String token) throws IOException, InterruptedException, UnirestException, UpstoxException {
-        Iterable<IdeaOrderMapper> orderMapperIterable = ideaOrderMapperRepository.findAll();
-        List<IdeaOrderMapper> ideaOrderMappers = convertIterableToListOrderMapper(orderMapperIterable);
-        log.info("The order we are trying to cancel is : " + ideaOrderMappers.toString());
+        Iterable<NiftyMidCapOrderMapper> orderMapperIterable = niftyMidCapOrderMapperRepository.findAll();
+        List<NiftyMidCapOrderMapper> niftyMidCapOrderMappers = convertIterableToListOrderMapper(orderMapperIterable);
+        log.info("The order we are trying to cancel is : " + niftyMidCapOrderMappers.toString());
 
-        if (ideaOrderMappers.isEmpty()) {
+        if (niftyMidCapOrderMappers.isEmpty()) {
             log.info("There is no order available in our DB");
             return;
         }
 
-        for (IdeaOrderMapper ideaOrderMapper : ideaOrderMappers)
+        for (NiftyMidCapOrderMapper niftyMidCapOrderMapper : niftyMidCapOrderMappers)
         {
             //get order status first then cancel
-            log.info("fetch the order status which we want to cancel : " + ideaOrderMapper);
-            String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + ideaOrderMapper.getOrderId();
+            log.info("fetch the order status which we want to cancel : " + niftyMidCapOrderMapper);
+            String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + niftyMidCapOrderMapper.getOrderId();
 
            // Unirest.setTimeouts(0, 0);
             com.mashape.unirest.http.HttpResponse<String> orderDetailsResponse = Unirest.get(orderDetailsUrl)
@@ -264,7 +264,7 @@ public class IdeaOrderService {
             String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
             if (statusOrderDetails.equalsIgnoreCase("error")) {
                 log.info("The order is of previous day so we can't perform any operation on this!!");
-                ideaOrderMapperRepository.deleteById(ideaOrderMapper.getId());
+                niftyMidCapOrderMapperRepository.deleteById(niftyMidCapOrderMapper.getId());
                 continue;
             }
 
@@ -276,8 +276,8 @@ public class IdeaOrderService {
             }
 
             if (!orderData.getData().getOrderStatus().equalsIgnoreCase("complete")) {
-                log.info("Cancelling the order for order id is : " + ideaOrderMapper.getOrderId());
-                String cancelOrderUrl = environment.getProperty("upstox_url") + environment.getProperty("cancel_order") + ideaOrderMapper.getOrderId();
+                log.info("Cancelling the order for order id is : " + niftyMidCapOrderMapper.getOrderId());
+                String cancelOrderUrl = environment.getProperty("upstox_url") + environment.getProperty("cancel_order") + niftyMidCapOrderMapper.getOrderId();
                 //Unirest.setTimeouts(0, 0);
                 com.mashape.unirest.http.HttpResponse<String> orderCancelResponse = Unirest.delete(cancelOrderUrl)
                         .header("Accept", "application/json")
@@ -288,19 +288,19 @@ public class IdeaOrderService {
                 String status = jsonNode.get("status").asText();
                 if (status.equalsIgnoreCase("error")) {
                     log.info("Cancel of already cancelled/rejected/completed order is not allowed");
-                    ideaOrderMapperRepository.deleteById(ideaOrderMapper.getId());
+                    niftyMidCapOrderMapperRepository.deleteById(niftyMidCapOrderMapper.getId());
                     continue;
                 }
                 log.info("We are cacelling the order for the order details : "+ orderCancelResponse.getBody());
                 OrderResponse orderResponse = objectMapper.readValue(orderCancelResponse.getBody(), OrderResponse.class);
 
                 if (orderResponse.getStatus().equalsIgnoreCase("success")) {
-                    ideaOrderMapperRepository.deleteById(ideaOrderMapper.getId());
+                    niftyMidCapOrderMapperRepository.deleteById(niftyMidCapOrderMapper.getId());
                 } else {
-                    ideaOrderMapperRepository.deleteById(ideaOrderMapper.getId());
+                    niftyMidCapOrderMapperRepository.deleteById(niftyMidCapOrderMapper.getId());
                     log.error("There is some error to cancel order can you please check manually!!");
                 }
-                ideaOrderMapperRepository.deleteById(ideaOrderMapper.getId());
+                niftyMidCapOrderMapperRepository.deleteById(niftyMidCapOrderMapper.getId());
                 log.info("Response Code of order cancel : " + orderCancelResponse.getStatus());
                 log.info("Response Body of order cancel : " + orderCancelResponse.getBody());
             }
@@ -309,8 +309,8 @@ public class IdeaOrderService {
 //        orderMapperRepository.deleteAll();
     }
 
-    public IdeaFutureMapping getFutureMapping(OrderRequestDto orderRequestDto) throws UpstoxException {
-        Optional<IdeaFutureMapping> optionalFutureMappingSymbolName = ideaFutureMappingRepository.findBySymbolName(orderRequestDto.getInstrument_name());
+    public NiftyMidCapFutureMapping getFutureMapping(OrderRequestDto orderRequestDto) throws UpstoxException {
+        Optional<NiftyMidCapFutureMapping> optionalFutureMappingSymbolName = niftyMidCapFutureMappingRepository.findBySymbolName(orderRequestDto.getInstrument_name());
         return optionalFutureMappingSymbolName.orElseThrow(() -> new UpstoxException("The provided Symbol is not available in future mappping Database " + orderRequestDto.getInstrument_name()));
     }
 
@@ -373,30 +373,30 @@ public class IdeaOrderService {
                .build();
    }
 
-    public static List<IdeaOrderMapper> convertIterableToListOrderMapper(Iterable<IdeaOrderMapper> iterable) {
-        List<IdeaOrderMapper> list = new ArrayList<>();
+    public static List<NiftyMidCapOrderMapper> convertIterableToListOrderMapper(Iterable<NiftyMidCapOrderMapper> iterable) {
+        List<NiftyMidCapOrderMapper> list = new ArrayList<>();
 
-        for (IdeaOrderMapper item : iterable) {
+        for (NiftyMidCapOrderMapper item : iterable) {
             list.add(item);
         }
 
         return list;
     }
 
-    public static List<IdeaNextFutureMapping> convertIterableToListNextFutureMapper(Iterable<IdeaNextFutureMapping> iterable) {
-        List<IdeaNextFutureMapping> list = new ArrayList<>();
+    public static List<NiftyMidCapNextFutureMapping> convertIterableToListNextFutureMapper(Iterable<NiftyMidCapNextFutureMapping> iterable) {
+        List<NiftyMidCapNextFutureMapping> list = new ArrayList<>();
 
-        for (IdeaNextFutureMapping item : iterable) {
+        for (NiftyMidCapNextFutureMapping item : iterable) {
             list.add(item);
         }
 
         return list;
     }
 
-    public static List<IdeaFutureMapping> convertIterableToListFutureMapper(Iterable<IdeaFutureMapping> iterable) {
-        List<IdeaFutureMapping> list = new ArrayList<>();
+    public static List<NiftyMidCapFutureMapping> convertIterableToListFutureMapper(Iterable<NiftyMidCapFutureMapping> iterable) {
+        List<NiftyMidCapFutureMapping> list = new ArrayList<>();
 
-        for (IdeaFutureMapping item : iterable) {
+        for (NiftyMidCapFutureMapping item : iterable) {
             list.add(item);
         }
 

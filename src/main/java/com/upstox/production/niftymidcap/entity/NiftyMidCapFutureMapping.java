@@ -1,4 +1,4 @@
-package com.upstox.production.idea.entity;
+package com.upstox.production.niftymidcap.entity;
 
 import lombok.*;
 
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class IdeaFutureMapping {
+public class NiftyMidCapFutureMapping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

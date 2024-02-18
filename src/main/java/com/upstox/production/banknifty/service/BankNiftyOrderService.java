@@ -58,7 +58,7 @@ public class BankNiftyOrderService {
     @Autowired
     private BankNiftyNextFutureMapperRepository bankNiftyNextFutureMapperRepository;
 
-    public String BurOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
+    public String buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         // Process buy order Request Data
         OrderRequestDto orderRequestDto = processBuyOrderRequestData(requestData);
