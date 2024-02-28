@@ -23,8 +23,6 @@ public class BankNiftyOrderController {
     @Autowired
     private BankNiftyOrderService bankNiftyOrderService;
 
-    @Async("asyncExecutor")
-    @Retryable(value = { Exception.class, UpstoxException.class }, maxAttempts = 3, backoff = @Backoff(delay = 500))
     @PostMapping("/tradingView")
     public String BankNiftyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
                                           @RequestBody String bankNiftyPayload) throws UpstoxException, IOException, UnirestException, InterruptedException {
