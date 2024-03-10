@@ -7,9 +7,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -23,10 +20,17 @@ public class Script3OrderController {
     @Autowired
     private Script3OrderService script3OrderService;
 
-    @PostMapping("/tradingView")
-    public String BankNiftyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-                                          @RequestBody String bankNiftyPayload) throws UpstoxException, IOException, UnirestException, InterruptedException {
-        log.info("Data received to place order is : " + bankNiftyPayload);
-        return script3OrderService.buyOrderExecution(bankNiftyPayload);
+    @PostMapping("/tradingView/buyOrder")
+    public String script1BuyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
+                                           @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
+        log.info("Data received to place order is : " + script1Payload);
+        return script3OrderService.buyOrderExecution(script1Payload);
+    }
+
+    @PostMapping("/tradingView/sellOrder")
+    public String script1SellOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
+                                            @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
+        log.info("Data received to place order is : " + script1Payload);
+        return script3OrderService.sellOrderExecution(script1Payload);
     }
 }

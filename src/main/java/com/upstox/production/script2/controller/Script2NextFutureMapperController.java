@@ -17,7 +17,7 @@ public class Script2NextFutureMapperController {
     private Script2NextFutureMapperService script2NextFutureMapperService;
 
     @PostMapping("/nextFutureMapping")
-    public String addBankNiftyNextFutureMapper(@RequestBody Script2FutureMapperRequestDto futureMapperRequestDto) throws UpstoxException {
+    public String addScript2NextFutureMapper(@RequestBody Script2FutureMapperRequestDto futureMapperRequestDto) throws UpstoxException {
         return script2NextFutureMapperService.addNextFutureMapping(futureMapperRequestDto);
     }
 }

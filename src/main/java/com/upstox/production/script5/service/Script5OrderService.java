@@ -1,20 +1,22 @@
-package com.upstox.production.script2.service;
+package com.upstox.production.script5.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.upstox.production.centralconfiguration.dto.*;
+import com.upstox.production.centralconfiguration.dto.GetPositionDataDto;
+import com.upstox.production.centralconfiguration.dto.GetPositionResponseDto;
+import com.upstox.production.centralconfiguration.dto.OrderRequestDto;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
-import com.upstox.production.script2.entity.Script2FutureMapping;
-import com.upstox.production.script2.entity.Script2NextFutureMapping;
-import com.upstox.production.script2.entity.Script2OrderMapper;
-import com.upstox.production.script2.repository.Script2FutureMappingRepository;
-import com.upstox.production.script2.repository.Script2NextFutureMapperRepository;
-import com.upstox.production.script2.repository.Script2OrderMapperRepository;
+import com.upstox.production.script5.entity.Script5FutureMapping;
+import com.upstox.production.script5.entity.Script5NextFutureMapping;
+import com.upstox.production.script5.entity.Script5OrderMapper;
+import com.upstox.production.script5.repository.Script5FutureMappingRepository;
+import com.upstox.production.script5.repository.Script5NextFutureMapperRepository;
+import com.upstox.production.script5.repository.Script5OrderMapperRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +36,9 @@ import java.util.*;
 
 @Service
 @PropertySource("classpath:data.properties")
-public class Script2OrderService {
+public class Script5OrderService {
 
-    private static final Log log = LogFactory.getLog(Script2OrderService.class);
+    private static final Log log = LogFactory.getLog(Script5OrderService.class);
 
     private static final Double MULTIPLIER = 0.05;
 
@@ -47,13 +49,13 @@ public class Script2OrderService {
     private UpstoxLoginRepository upstoxLoginRepository;
 
     @Autowired
-    private Script2FutureMappingRepository script2FutureMappingRepository;
+    private Script5FutureMappingRepository script5FutureMappingRepository;
 
     @Autowired
-    private Script2OrderMapperRepository script2OrderMapperRepository;
+    private Script5OrderMapperRepository script5OrderMapperRepository;
 
     @Autowired
-    private Script2NextFutureMapperRepository script2NextFutureMapperRepository;
+    private Script5NextFutureMapperRepository script5NextFutureMapperRepository;
 
     public String buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
@@ -101,25 +103,25 @@ public class Script2OrderService {
     }
 
     public void updateFutureMapper(OrderRequestDto orderRequestDto) throws UpstoxException {
-        Script2FutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        Script5FutureMapping futureMapping = getFutureMapping(orderRequestDto);
         LocalTime twelvePM = LocalTime.of(12, 0);
         if (futureMapping.getExpiryDate().equals(LocalDate.now()) && (LocalTime.now().isAfter(twelvePM) || LocalTime.now().equals(twelvePM))) {
-            Optional<Script2NextFutureMapping> nextFutureMappingsOptional = script2NextFutureMapperRepository.findBySymbolName(orderRequestDto.getInstrument_name());
+            Optional<Script5NextFutureMapping> nextFutureMappingsOptional = script5NextFutureMapperRepository.findBySymbolName(orderRequestDto.getInstrument_name());
             log.info("Here we came");
             if (nextFutureMappingsOptional.isEmpty()) {
                 log.info("Future mapping has be already done or you forgot to add upcoming future mapping please check by adding nextFutureMapping the date you are expecting");
                 return;
             }
             log.info("Next Future data recived : " + nextFutureMappingsOptional.get());
-            script2FutureMappingRepository.deleteById(futureMapping.getId());
+            script5FutureMappingRepository.deleteById(futureMapping.getId());
 
-            Script2FutureMapping futureMappingToNextExpiryAfter12Pm = Script2FutureMapping.builder()
+            Script5FutureMapping futureMappingToNextExpiryAfter12Pm = Script5FutureMapping.builder()
                     .expiryDate(nextFutureMappingsOptional.get().getExpiryDate())
                     .symbolName(nextFutureMappingsOptional.get().getSymbolName())
                     .instrumentToken(nextFutureMappingsOptional.get().getInstrumentToken())
                     .quantity(nextFutureMappingsOptional.get().getQuantity()).build();
-            futureMappingToNextExpiryAfter12Pm = script2FutureMappingRepository.save(futureMappingToNextExpiryAfter12Pm);
-            script2NextFutureMapperRepository.deleteById(nextFutureMappingsOptional.get().getId());
+            futureMappingToNextExpiryAfter12Pm = script5FutureMappingRepository.save(futureMappingToNextExpiryAfter12Pm);
+            script5NextFutureMapperRepository.deleteById(nextFutureMappingsOptional.get().getId());
             log.info("The current future expiry has been added successfully !! " + futureMappingToNextExpiryAfter12Pm);
         }
     }
@@ -129,7 +131,7 @@ public class Script2OrderService {
 
         log.info("Placing the new Entry order for : " + orderRequestDto);
         HttpResponse<String> receiveNewOrderResponse = null;
-        Script2FutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        Script5FutureMapping futureMapping = getFutureMapping(orderRequestDto);
 
         if (orderRequestDto.getTransaction_type().equalsIgnoreCase("BUY")) {
             String requestBody = "{"
@@ -151,12 +153,12 @@ public class Script2OrderService {
             // Create the HttpRequest
             String orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(orderUrl))
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", token)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
+                .uri(URI.create(orderUrl))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .header("Authorization", token)
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
             receiveNewOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             log.info("Market order sent for BUY entry : " + receiveNewOrderResponse.body());
         }
@@ -195,7 +197,7 @@ public class Script2OrderService {
         }
 
         if (receiveNewOrderResponse == null) {
-            throw new UpstoxException("There is some error in placing order in script2 of buy order execution");
+            throw new UpstoxException("There is some error in placing order in script1 of buy order execution");
         }
 
         return receiveNewOrderResponse.body();
@@ -205,7 +207,7 @@ public class Script2OrderService {
 
         log.info("Placing the new Entry order for : " + orderRequestDto);
         HttpResponse<String> receiveNewOrderResponse = null;
-        Script2FutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        Script5FutureMapping futureMapping = getFutureMapping(orderRequestDto);
 
         if (orderRequestDto.getTransaction_type().equalsIgnoreCase("BUY")) {
             if (detailsOfExistingPosition(token, orderRequestDto)) {
@@ -272,7 +274,7 @@ public class Script2OrderService {
         }
 
         if (receiveNewOrderResponse == null) {
-            throw new UpstoxException("There is some error in placing order in script2 of buy order execution");
+            throw new UpstoxException("There is some error in placing order in script1 of buy order execution");
         }
 
         return receiveNewOrderResponse.body();
@@ -292,7 +294,7 @@ public class Script2OrderService {
         }
 
         // Check particular symbol is available in futureMapping or not
-        Script2FutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        Script5FutureMapping futureMapping = getFutureMapping(orderRequestDto);
 
         for (GetPositionDataDto positionDataDto : getPositionResponseDto.getData()) {
             if (positionDataDto.getInstrumentToken().equalsIgnoreCase(futureMapping.getInstrumentToken()) && positionDataDto.getQuantity() !=0) {
@@ -302,8 +304,8 @@ public class Script2OrderService {
         return false;
     }
 
-    public Script2FutureMapping getFutureMapping(OrderRequestDto orderRequestDto) throws UpstoxException {
-        Optional<Script2FutureMapping> optionalFutureMappingSymbolName = script2FutureMappingRepository.findBySymbolName(orderRequestDto.getInstrument_name());
+    public Script5FutureMapping getFutureMapping(OrderRequestDto orderRequestDto) throws UpstoxException {
+        Optional<Script5FutureMapping> optionalFutureMappingSymbolName = script5FutureMappingRepository.findBySymbolName(orderRequestDto.getInstrument_name());
         return optionalFutureMappingSymbolName.orElseThrow(() -> new UpstoxException("The provided Symbol is not available in future mappping Database " + orderRequestDto.getInstrument_name()));
     }
 
@@ -332,39 +334,39 @@ public class Script2OrderService {
     }
 
 
-    public  OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(requestData);
+   public  OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
+       ObjectMapper objectMapper = new ObjectMapper();
+       JsonNode jsonNode = objectMapper.readTree(requestData);
         log.info("Buy Order Request process has started for the data : " + jsonNode.toString());
-        // Continue with your processing
-        double price = jsonNode.get("price").asDouble();
-        int quantity = jsonNode.get("quantity").asInt();
-        String instrumentName = jsonNode.get("instrument_name").asText();
-        String orderType = jsonNode.get("order_type").asText();
-        String transactionType = jsonNode.get("transaction_type").asText();
+       // Continue with your processing
+       double price = jsonNode.get("price").asDouble();
+       int quantity = jsonNode.get("quantity").asInt();
+       String instrumentName = jsonNode.get("instrument_name").asText();
+       String orderType = jsonNode.get("order_type").asText();
+       String transactionType = jsonNode.get("transaction_type").asText();
 
-        log.info("Convert order_name into separate JsoneNode");
-        // If you need to convert order_name into a separate JsonNode with key-value pairs
-        String[] parts = jsonNode.get("order_name").toString().replace("\"", "").split(" ");
-        Map<String, String> map = new HashMap<>();
-        log.info("order_name parts : " + Arrays.toString(parts));
-        for (String part : parts) {
-            log.info("Single parts : " + part);
-            String[] subParts = part.split(":");
-            map.put(subParts[0], subParts[1]);
-        }
+       log.info("Convert order_name into separate JsoneNode");
+       // If you need to convert order_name into a separate JsonNode with key-value pairs
+       String[] parts = jsonNode.get("order_name").toString().replace("\"", "").split(" ");
+       Map<String, String> map = new HashMap<>();
+       log.info("order_name parts : " + Arrays.toString(parts));
+       for (String part : parts) {
+           log.info("Single parts : " + part);
+           String[] subParts = part.split(":");
+           map.put(subParts[0], subParts[1]);
+       }
 
-        log.info("The type of order we have received : " + orderType);
+       log.info("The type of order we have received : " + orderType);
 
-        return OrderRequestDto.builder()
-                .quantity(quantity)
-                .price(Double.parseDouble(map.get("entryPrice")))
-                .instrument_name(instrumentName)
-                .order_type("LIMIT")
-                .transaction_type(map.get("TYPE").trim().equals("LE") ? "BUY" : "SELL")
-                .entryPrice(Double.parseDouble(map.get("entryPrice")))
-                .build();
-    }
+       return OrderRequestDto.builder()
+               .quantity(quantity)
+               .price(Double.parseDouble(map.get("entryPrice")))
+               .instrument_name(instrumentName)
+               .order_type("LIMIT")
+               .transaction_type(map.get("TYPE").trim().equals("LE") ? "BUY" : "SELL")
+               .entryPrice(Double.parseDouble(map.get("entryPrice")))
+               .build();
+   }
 
     public  OrderRequestDto processSellOrderRequestData(String requestData) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -400,30 +402,30 @@ public class Script2OrderService {
                 .build();
     }
 
-    public static List<Script2OrderMapper> convertIterableToListOrderMapper(Iterable<Script2OrderMapper> iterable) {
-        List<Script2OrderMapper> list = new ArrayList<>();
+    public static List<Script5OrderMapper> convertIterableToListOrderMapper(Iterable<Script5OrderMapper> iterable) {
+        List<Script5OrderMapper> list = new ArrayList<>();
 
-        for (Script2OrderMapper item : iterable) {
+        for (Script5OrderMapper item : iterable) {
             list.add(item);
         }
 
         return list;
     }
 
-    public static List<Script2NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script2NextFutureMapping> iterable) {
-        List<Script2NextFutureMapping> list = new ArrayList<>();
+    public static List<Script5NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script5NextFutureMapping> iterable) {
+        List<Script5NextFutureMapping> list = new ArrayList<>();
 
-        for (Script2NextFutureMapping item : iterable) {
+        for (Script5NextFutureMapping item : iterable) {
             list.add(item);
         }
 
         return list;
     }
 
-    public static List<Script2FutureMapping> convertIterableToListFutureMapper(Iterable<Script2FutureMapping> iterable) {
-        List<Script2FutureMapping> list = new ArrayList<>();
+    public static List<Script5FutureMapping> convertIterableToListFutureMapper(Iterable<Script5FutureMapping> iterable) {
+        List<Script5FutureMapping> list = new ArrayList<>();
 
-        for (Script2FutureMapping item : iterable) {
+        for (Script5FutureMapping item : iterable) {
             list.add(item);
         }
 
