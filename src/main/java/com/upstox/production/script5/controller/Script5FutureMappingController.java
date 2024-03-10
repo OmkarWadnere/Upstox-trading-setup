@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/fill/script1")
+@RequestMapping("/fill/script5")
 public class Script5FutureMappingController {
 
     @Autowired
     private Script5FutureMappingService script5FutureMappingService;
 
     @PostMapping("/futureMapping")
-    public String addScript1FutureMapping(@RequestBody Script5FutureMapperRequestDto futureMapperRequestDto) throws UpstoxException {
+    public String addScript4FutureMapping(@RequestBody Script5FutureMapperRequestDto futureMapperRequestDto) throws UpstoxException {
         return script5FutureMappingService.addFutureMapping(futureMapperRequestDto);
     }
 }

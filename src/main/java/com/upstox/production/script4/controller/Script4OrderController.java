@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/placeOrder/script1")
+@RequestMapping("/placeOrder/script4")
 public class Script4OrderController {
 
     private static final Log log = LogFactory.getLog(Script4OrderController.class);
@@ -21,16 +21,16 @@ public class Script4OrderController {
     private Script4OrderService script4OrderService;
 
     @PostMapping("/tradingView/buyOrder")
-    public String script1BuyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-                                           @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
-        log.info("Data received to place order is : " + script1Payload);
-        return script4OrderService.buyOrderExecution(script1Payload);
+    public String script4BuyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
+                                           @RequestBody String script4Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
+        log.info("Data received to place order is : " + script4Payload);
+        return script4OrderService.buyOrderExecution(script4Payload);
     }
 
     @PostMapping("/tradingView/sellOrder")
     public String script1SellOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-                                            @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
-        log.info("Data received to place order is : " + script1Payload);
-        return script4OrderService.sellOrderExecution(script1Payload);
+                                            @RequestBody String script4Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
+        log.info("Data received to place order is : " + script4Payload);
+        return script4OrderService.sellOrderExecution(script4Payload);
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/placeOrder/script1")
+@RequestMapping("/placeOrder/script5")
 public class Script5OrderController {
 
     private static final Log log = LogFactory.getLog(Script5OrderController.class);
@@ -21,16 +21,16 @@ public class Script5OrderController {
     private Script5OrderService script5OrderService;
 
     @PostMapping("/tradingView/buyOrder")
-    public String script1BuyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-                                           @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
-        log.info("Data received to place order is : " + script1Payload);
-        return script5OrderService.buyOrderExecution(script1Payload);
+    public String script5BuyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
+                                           @RequestBody String script5Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
+        log.info("Data received to place order is : " + script5Payload);
+        return script5OrderService.buyOrderExecution(script5Payload);
     }
 
     @PostMapping("/tradingView/sellOrder")
     public String script1SellOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-                                            @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
-        log.info("Data received to place order is : " + script1Payload);
-        return script5OrderService.sellOrderExecution(script1Payload);
+                                            @RequestBody String script5Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
+        log.info("Data received to place order is : " + script5Payload);
+        return script5OrderService.sellOrderExecution(script5Payload);
     }
 }
