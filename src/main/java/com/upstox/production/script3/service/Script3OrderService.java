@@ -362,7 +362,7 @@ public class Script3OrderService {
                 .instrument_name(instrumentName)
                 .order_type("LIMIT")
                 .transaction_type(map.get("TYPE").trim().equals("LE") ? "BUY" : "SELL")
-                .entryPrice(Double.parseDouble(map.get("entryPrice")))
+                .stoplossPrice(Double.parseDouble(map.get("entryPrice")))
                 .build();
     }
 
@@ -396,7 +396,7 @@ public class Script3OrderService {
                 .instrument_name(instrumentName)
                 .order_type("LIMIT")
                 .transaction_type(map.get("TYPE").trim().equals("SE") ? "SELL" : "BUY")
-                .entryPrice(Double.parseDouble(map.get("entryPrice")))
+                .stoplossPrice(Double.parseDouble(map.get("entryPrice")))
                 .build();
     }
 

@@ -17,6 +17,6 @@ public class OrderRequestDto {
     private String transaction_type;
     private String SYMBOL;
     private String TYPE;
-    private Double entryPrice;
+    private Double stoplossPrice;
 
 }
