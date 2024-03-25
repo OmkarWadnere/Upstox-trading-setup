@@ -6,7 +6,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.dto.GetPositionDataDto;
 import com.upstox.production.centralconfiguration.dto.GetPositionResponseDto;
-import com.upstox.production.centralconfiguration.dto.OrderResponse;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
@@ -43,7 +42,7 @@ public class Scrip1DailyOrderSchedular {
     @Scheduled(cron = "20 15 9 * * ?") // Adjust the cron expression for 9:15:20 AM every morning
     public void Script1DailyTargetOrder() throws UnirestException, IOException, UpstoxException, InterruptedException {
         String token = getTokenDetails();
-        GetPositionResponseDto getPositionResponseDto = getAllPostionCall(token);
+        GetPositionResponseDto getPositionResponseDto = getAllPositionCall(token);
 
         if (!getPositionResponseDto.getStatus().equalsIgnoreCase("success")) {
             throw new UpstoxException("We are not getting response for get positions from upstox its time to take manual action!!");
@@ -90,8 +89,6 @@ public class Scrip1DailyOrderSchedular {
                     // Print the response status code and body
                     log.info("Response Code received from server after placing new order : " + receiveNewOrderResponse.statusCode());
                     log.info("Response Body received from server after placing new order: " + receiveNewOrderResponse.body());
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    OrderResponse orderResponse = objectMapper.readValue(receiveNewOrderResponse.body(), OrderResponse.class);
                     script1ScheduleOrderMapperRepository.deleteAll();
                 }
             }
@@ -104,7 +101,7 @@ public class Scrip1DailyOrderSchedular {
         return upstoxLogin.getAccess_token();
     }
 
-    public GetPositionResponseDto getAllPostionCall(String token) throws UnirestException, JsonProcessingException {
+    public GetPositionResponseDto getAllPositionCall(String token) throws UnirestException, JsonProcessingException {
         log.info("Fetch the current position we are holding");
         Unirest.setTimeouts(0, 0);
         com.mashape.unirest.http.HttpResponse<String> getAllPositionResponse = Unirest.get(environment.getProperty("upstox_url") + environment.getProperty("get_position"))

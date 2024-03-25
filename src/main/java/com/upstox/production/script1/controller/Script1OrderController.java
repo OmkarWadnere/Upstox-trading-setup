@@ -29,7 +29,7 @@ public class Script1OrderController {
     }
 
     @PostMapping("/tradingView/sellOrder")
-    public String script1SellOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
+    public PlacedOrderDetails script1SellOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
                                             @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
         log.info("Data received to place order is : " + script1Payload);
         return script1OrderService.sellOrderExecution(script1Payload);

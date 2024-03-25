@@ -54,6 +54,8 @@ public class Script1OrderService {
     private Script1TargetOrderMapperRepository script1TargetOrderMapperRepository;
     @Autowired
     private Script1ScheduleOrderMapperRepository script1ScheduleOrderMapperRepository;
+    @Autowired
+    ObjectMapper objectMapper;
 
     public PlacedOrderDetails buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
@@ -80,7 +82,7 @@ public class Script1OrderService {
     }
 
 
-    public String sellOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
+    public PlacedOrderDetails sellOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         // Process buy order Request Data
         OrderRequestDto orderRequestDto = processSellOrderRequestData(requestData);
@@ -92,13 +94,13 @@ public class Script1OrderService {
         log.info("The token we are using for login for today's session is : " + token);
 
         //place new order
-        String orderDetails = sellOrderEntry(token, orderRequestDto);
+        PlacedOrderDetails placedOrderDetails = sellOrderProcess(token, orderRequestDto);
 
         //update future mapper based on expiry date
         updateFutureMapper(orderRequestDto);
 
         // Put New Entry order
-        return orderDetails;
+        return placedOrderDetails;
 
     }
 
@@ -127,7 +129,7 @@ public class Script1OrderService {
     }
 
 
-    public PlacedOrderDetails buyOrderProcess(String token, OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException {
+    private PlacedOrderDetails buyOrderProcess(String token, OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         log.info("Placing the new Entry order for : " + orderRequestDto);
         HttpResponse<String> receiveNewOrderResponse = null;
@@ -161,7 +163,6 @@ public class Script1OrderService {
                 .build();
             receiveNewOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            ObjectMapper objectMapper = new ObjectMapper();
             placedOrderDetails = objectMapper.readValue(receiveNewOrderResponse.body(), PlacedOrderDetails.class);
             log.info("Complete details of received order response is : " + placedOrderDetails);
 
@@ -224,13 +225,16 @@ public class Script1OrderService {
         return placedOrderDetails;
     }
 
-    public String sellOrderEntry(String token, OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException {
+    public PlacedOrderDetails sellOrderProcess(String token, OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         log.info("Placing the new Entry order for : " + orderRequestDto);
         HttpResponse<String> receiveNewOrderResponse = null;
         Script1FutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        PlacedOrderDetails placedOrderDetails = null;
 
         if (orderRequestDto.getTransaction_type().equalsIgnoreCase("BUY")) {
+            cancelAllTargetOrder(token);
+            script1TargetOrderMapperRepository.deleteAll();
             if (detailsOfExistingPosition(token, orderRequestDto)) {
                 String requestBody = "{"
                         + "\"quantity\": " + futureMapping.getQuantity() + ","
@@ -292,13 +296,24 @@ public class Script1OrderService {
                     .build();
             receiveNewOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             log.info("Market order sent for SELL means new entry : " + receiveNewOrderResponse.body());
+            placedOrderDetails = objectMapper.readValue(receiveNewOrderResponse.body(), PlacedOrderDetails.class);
+            log.info("Complete details of received order response is : " + placedOrderDetails);
+            // Get BUY order details
+            OrderData orderData = getOrderDetails(orderRequestDto, placedOrderDetails, token);
+
+            // Calculate 1:2 risk to reward ratio
+            double targetPrice = calculateRiskToRewardRatioForSell(orderRequestDto, orderData, token);
+
+            // Place Limit target order
+            placeSellTargetOrder(orderRequestDto, orderData, targetPrice, token);
+
         }
 
         if (receiveNewOrderResponse == null) {
             throw new UpstoxException("There is some error in placing order in script1 of buy order execution");
         }
 
-        return receiveNewOrderResponse.body();
+        return placedOrderDetails;
     }
 
     public boolean detailsOfExistingPosition(String token, OrderRequestDto orderRequestDto) throws UnirestException, IOException, UpstoxException, InterruptedException {
@@ -325,12 +340,12 @@ public class Script1OrderService {
         return false;
     }
 
-    public Script1FutureMapping getFutureMapping(OrderRequestDto orderRequestDto) throws UpstoxException {
+    private Script1FutureMapping getFutureMapping(OrderRequestDto orderRequestDto) throws UpstoxException {
         Optional<Script1FutureMapping> optionalFutureMappingSymbolName = script1FutureMappingRepository.findBySymbolName(orderRequestDto.getInstrument_name());
         return optionalFutureMappingSymbolName.orElseThrow(() -> new UpstoxException("The provided Symbol is not available in future mappping Database " + orderRequestDto.getInstrument_name()));
     }
 
-    public GetPositionResponseDto getAllPositionCall(String token) throws UnirestException, JsonProcessingException {
+    private GetPositionResponseDto getAllPositionCall(String token) throws UnirestException, JsonProcessingException {
         log.info("Fetch the current position we are holding");
         Unirest.setTimeouts(0, 0);
         com.mashape.unirest.http.HttpResponse<String> getAllPositionResponse = Unirest.get(environment.getProperty("upstox_url") + environment.getProperty("get_position"))
@@ -344,7 +359,7 @@ public class Script1OrderService {
     }
 
 
-    public UpstoxLogin getLoginDetails() throws UpstoxException {
+    private UpstoxLogin getLoginDetails() throws UpstoxException {
         log.info("Find the user is available in our DB for provided email Id");
         Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(environment.getProperty("email_id"));
         if (optionalUpstoxLogin.isEmpty()) {
@@ -355,7 +370,7 @@ public class Script1OrderService {
     }
 
 
-   public  OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
+   private  OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
        ObjectMapper objectMapper = new ObjectMapper();
        JsonNode jsonNode = objectMapper.readTree(requestData);
         log.info("Buy Order Request process has started for the data : " + jsonNode.toString());
@@ -423,7 +438,7 @@ public class Script1OrderService {
                 .build();
     }
 
-    public OrderData getOrderDetails(OrderRequestDto orderRequestDto, PlacedOrderDetails placedOrderDetails, String token) throws UnirestException, JsonProcessingException, UpstoxException {
+    private OrderData getOrderDetails(OrderRequestDto orderRequestDto, PlacedOrderDetails placedOrderDetails, String token) throws UnirestException, JsonProcessingException, UpstoxException {
         //get order status first then cancel
         String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + placedOrderDetails.getData().getOrderId();
 
@@ -446,30 +461,36 @@ public class Script1OrderService {
         return objectMapper.readValue(orderDetailsResponse.getBody(), OrderData.class);
     }
 
-    public double calculateRiskToRewardRatioForBuy(OrderRequestDto orderRequestDto, OrderData orderData, String token) {
+    private double calculateRiskToRewardRatioForBuy(OrderRequestDto orderRequestDto, OrderData orderData, String token) {
             double entryPrice = orderData.getData().getAveragePrice();
             double stoplossPrice = orderRequestDto.getStoplossPrice();
             return entryPrice + ((entryPrice-stoplossPrice) * 2);
     }
 
-    public void placeBuyTargetOrder(OrderRequestDto orderRequestDto, OrderData orderData, double targetPrice, String token) throws UpstoxException, IOException, InterruptedException {
+    private double calculateRiskToRewardRatioForSell(OrderRequestDto orderRequestDto, OrderData orderData, String  token) {
+        double entryPrice = orderData.getData().getPrice();
+        double stoplossPrice = orderRequestDto.getStoplossPrice();
+        return entryPrice - ((stoplossPrice - entryPrice)* 2);
+    }
+
+    private void placeBuyTargetOrder(OrderRequestDto orderRequestDto, OrderData orderData, double targetPrice, String token) throws UpstoxException, IOException, InterruptedException {
         log.info("Placing the new Target order for : " + orderRequestDto);
-        double placeOrderEntryPrice = Math.round(targetPrice / MULTIPLIER) * MULTIPLIER;
+        double placeOrderTargetPrice = Math.round(targetPrice / MULTIPLIER) * MULTIPLIER;
         Script1FutureMapping futureMapping = getFutureMapping(orderRequestDto);
         Script1ScheduleOrderMapper script1ScheduleOrderMapper = Script1ScheduleOrderMapper.builder().orderType("SELL")
-                .targetPrice(placeOrderEntryPrice).instrumentToken(futureMapping.getInstrumentToken()).build();
+                .targetPrice(placeOrderTargetPrice).instrumentToken(futureMapping.getInstrumentToken()).build();
         script1ScheduleOrderMapperRepository.save(script1ScheduleOrderMapper);
         String requestBody = "{"
                 + "\"quantity\": "+ orderData.getData().getQuantity() + ","
                 + "\"product\": \"D\","
                 + "\"validity\": \"DAY\","
-                + "\"price\": "+ placeOrderEntryPrice + ","
+                + "\"price\": "+ placeOrderTargetPrice + ","
                 + "\"tag\": \"string\","
                 + "\"instrument_token\": \"" + futureMapping.getInstrumentToken() + "\","
                 + "\"order_type\": \"LIMIT\","
                 + "\"transaction_type\": \"SELL\","
                 + "\"disclosed_quantity\": 0,"
-                + "\"trigger_price\": " + placeOrderEntryPrice + ","
+                + "\"trigger_price\": " + placeOrderTargetPrice + ","
                 + "\"is_amo\": false"
                 + "}";
 
@@ -496,7 +517,53 @@ public class Script1OrderService {
         script1TargetOrderMapperRepository.save(Script1TargetOrderMapper.builder().orderId(placedOrderDetails.getData().getOrderId()).build());
     }
 
-    public void cancelAllTargetOrder(String token) throws IOException, InterruptedException, UnirestException, UpstoxException {
+    private void placeSellTargetOrder(OrderRequestDto orderRequestDto, OrderData orderData, double targetPrice, String token) throws UpstoxException, IOException, InterruptedException {
+        log.info("Placing the new Target order for : " + orderRequestDto);
+        double placeOrderTargetPrice = Math.round(targetPrice / MULTIPLIER) * MULTIPLIER;
+        Script1FutureMapping futureMapping = getFutureMapping(orderRequestDto);
+        int quantity = (orderData.getData().getQuantity() < 0) ? (orderData.getData().getQuantity() * -1) : (orderData.getData().getQuantity());
+        Script1ScheduleOrderMapper script1ScheduleOrderMapper = Script1ScheduleOrderMapper.builder().orderType("BUY")
+                .targetPrice(placeOrderTargetPrice).instrumentToken(futureMapping.getInstrumentToken()).build();
+        script1ScheduleOrderMapperRepository.save(script1ScheduleOrderMapper);
+        String requestBody = "{"
+                + "\"quantity\": "+ quantity + ","
+                + "\"product\": \"D\","
+                + "\"validity\": \"DAY\","
+                + "\"price\": "+ placeOrderTargetPrice + ","
+                + "\"tag\": \"string\","
+                + "\"instrument_token\": \"" + futureMapping.getInstrumentToken() + "\","
+                + "\"order_type\": \"LIMIT\","
+                + "\"transaction_type\": \"BUY\","
+                + "\"disclosed_quantity\": 0,"
+                + "\"trigger_price\": " + placeOrderTargetPrice + ","
+                + "\"is_amo\": false"
+                + "}";
+
+        log.info("Request body we are sending for placing new entry order : " + requestBody);
+
+        // Create the HttpRequest
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+
+        String orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(orderUrl))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .header("Authorization", token)
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+        HttpResponse<String> receiveNewOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        PlacedOrderDetails placedOrderDetails = objectMapper.readValue(receiveNewOrderResponse.body(), PlacedOrderDetails.class);
+        if (placedOrderDetails.getStatus().equalsIgnoreCase("success")) {
+            throw new UpstoxException("There is some error in placing target order for buy : " + orderRequestDto);
+        }
+        script1TargetOrderMapperRepository.save(Script1TargetOrderMapper.builder().orderId(placedOrderDetails.getData().getOrderId()).build());
+
+    }
+
+    private void cancelAllTargetOrder(String token) throws IOException, InterruptedException, UnirestException, UpstoxException {
         Iterable<Script1TargetOrderMapper> orderMapperIterable = script1TargetOrderMapperRepository.findAll();
         List<Script1TargetOrderMapper> script1TargetOrderMappers = convertIterableToListOrderMapper(orderMapperIterable);
         log.info("The order we are trying to cancel is : " + script1TargetOrderMappers);
@@ -567,7 +634,7 @@ public class Script1OrderService {
         }
     }
 
-    public static List<Script1TargetOrderMapper> convertIterableToListOrderMapper(Iterable<Script1TargetOrderMapper> iterable) {
+    private static List<Script1TargetOrderMapper> convertIterableToListOrderMapper(Iterable<Script1TargetOrderMapper> iterable) {
         List<Script1TargetOrderMapper> list = new ArrayList<>();
 
         for (Script1TargetOrderMapper item : iterable) {
@@ -577,7 +644,7 @@ public class Script1OrderService {
         return list;
     }
 
-    public static List<Script1NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script1NextFutureMapping> iterable) {
+    private static List<Script1NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script1NextFutureMapping> iterable) {
         List<Script1NextFutureMapping> list = new ArrayList<>();
 
         for (Script1NextFutureMapping item : iterable) {
@@ -587,7 +654,7 @@ public class Script1OrderService {
         return list;
     }
 
-    public static List<Script1FutureMapping> convertIterableToListFutureMapper(Iterable<Script1FutureMapping> iterable) {
+    private static List<Script1FutureMapping> convertIterableToListFutureMapper(Iterable<Script1FutureMapping> iterable) {
         List<Script1FutureMapping> list = new ArrayList<>();
 
         for (Script1FutureMapping item : iterable) {
