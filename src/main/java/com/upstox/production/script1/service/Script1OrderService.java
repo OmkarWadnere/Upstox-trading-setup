@@ -84,7 +84,7 @@ public class Script1OrderService {
 
     public PlacedOrderDetails sellOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
-        // Process buy order Request Data
+        // Process sell order Request Data
         OrderRequestDto orderRequestDto = processSellOrderRequestData(requestData);
 
         //get login details
@@ -438,6 +438,18 @@ public class Script1OrderService {
                 .build();
     }
 
+    public void deleteAllScript1OrderMapper() {
+        script1OrderMapperRepository.deleteAll();
+    }
+
+    public void deleteAllScript1ScheduleOrderMapper() {
+        script1ScheduleOrderMapperRepository.deleteAll();
+    }
+
+    public void deleteAllScript1TargetOrderMapper() {
+        script1TargetOrderMapperRepository.deleteAll();
+    }
+
     private OrderData getOrderDetails(OrderRequestDto orderRequestDto, PlacedOrderDetails placedOrderDetails, String token) throws UnirestException, JsonProcessingException, UpstoxException {
         //get order status first then cancel
         String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + placedOrderDetails.getData().getOrderId();
@@ -560,7 +572,6 @@ public class Script1OrderService {
             throw new UpstoxException("There is some error in placing target order for buy : " + orderRequestDto);
         }
         script1TargetOrderMapperRepository.save(Script1TargetOrderMapper.builder().orderId(placedOrderDetails.getData().getOrderId()).build());
-
     }
 
     private void cancelAllTargetOrder(String token) throws IOException, InterruptedException, UnirestException, UpstoxException {
@@ -630,7 +641,6 @@ public class Script1OrderService {
                 log.info("Response Code of order cancel : " + orderCancelResponse.getStatus());
                 log.info("Response Body of order cancel : " + orderCancelResponse.getBody());
             }
-
         }
     }
 

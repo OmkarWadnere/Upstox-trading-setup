@@ -34,4 +34,19 @@ public class Script1OrderController {
         log.info("Data received to place order is : " + script1Payload);
         return script1OrderService.sellOrderExecution(script1Payload);
     }
+
+    @DeleteMapping("/deleteAll/orderMapper")
+    public void deleteAllScript1OrderMapper() {
+        script1OrderService.deleteAllScript1OrderMapper();
+    }
+
+    @DeleteMapping("/deleteAll/ScheduleOrderMapper")
+    public void deleteAllScript1ScheduleOrderMapper() {
+        script1OrderService.deleteAllScript1ScheduleOrderMapper();
+    }
+
+    @DeleteMapping("/deleteAll/TargetOrderMapper")
+    public void deleteAllScript1TargetOrderMapper() {
+        script1OrderService.deleteAllScript1TargetOrderMapper();
+    }
 }

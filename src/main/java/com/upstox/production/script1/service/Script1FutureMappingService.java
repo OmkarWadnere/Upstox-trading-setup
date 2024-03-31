@@ -7,6 +7,8 @@ import com.upstox.production.script1.repository.Script1FutureMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,5 +44,24 @@ public class Script1FutureMappingService {
                 .expiryDate(futureMapperRequestDto.getExpiry_date())
                 .symbolName(futureMapperRequestDto.getSymbolName())
                 .quantity(futureMapperRequestDto.getQuantity()).build();
+    }
+
+    public void deleteAllFutureMapping() {
+        script1FutureMappingRepository.deleteAll();
+    }
+
+    public List<Script1FutureMapping> getAllFutureMappings() {
+        Iterable<Script1FutureMapping> futureMappingIterable = script1FutureMappingRepository.findAll();
+        return convertIterableToListFutureMapper(futureMappingIterable);
+    }
+
+    private static List<Script1FutureMapping> convertIterableToListFutureMapper(Iterable<Script1FutureMapping> iterable) {
+        List<Script1FutureMapping> list = new ArrayList<>();
+
+        for (Script1FutureMapping item : iterable) {
+            list.add(item);
+        }
+
+        return list;
     }
 }

@@ -6,8 +6,12 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.dto.GetPositionDataDto;
 import com.upstox.production.centralconfiguration.dto.GetPositionResponseDto;
+import com.upstox.production.centralconfiguration.entity.ExceptionalDayMapper;
+import com.upstox.production.centralconfiguration.entity.HolidayMapper;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
+import com.upstox.production.centralconfiguration.repository.ExceptionalDayMapperRepository;
+import com.upstox.production.centralconfiguration.repository.HolidayMapperRepository;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
 import com.upstox.production.script1.entity.Script1ScheduleOrderMapper;
 import com.upstox.production.script1.repository.Script1ScheduleOrderMapperRepository;
@@ -22,9 +26,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Slf4j
@@ -39,9 +46,21 @@ public class Scrip1DailyOrderSchedular {
     @Autowired
     private Script1ScheduleOrderMapperRepository script1ScheduleOrderMapperRepository;
 
+    @Autowired
+    private ExceptionalDayMapperRepository exceptionalDayMapperRepository;
+    @Autowired
+    private HolidayMapperRepository holidayMapperRepository;
+
     @Scheduled(cron = "20 15 9 * * ?") // Adjust the cron expression for 9:15:20 AM every morning
     public void Script1DailyTargetOrder() throws UnirestException, IOException, UpstoxException, InterruptedException {
-        String token = getTokenDetails();
+
+        String token = "Bearer " + getTokenDetails();
+
+        // Validate Non working days
+        AtomicBoolean flag = validateNonWorkingDays();
+        if (flag.get()) return;
+
+        // Working Days logic
         GetPositionResponseDto getPositionResponseDto = getAllPositionCall(token);
 
         if (!getPositionResponseDto.getStatus().equalsIgnoreCase("success")) {
@@ -56,7 +75,7 @@ public class Scrip1DailyOrderSchedular {
         placeScheduleTargetOrder(getPositionResponseDto, script1ScheduleOrderMappers, token);
     }
 
-    public void placeScheduleTargetOrder(GetPositionResponseDto getPositionResponseDto, List<Script1ScheduleOrderMapper> script1ScheduleOrderMappers, String token) throws IOException, InterruptedException {
+    private void placeScheduleTargetOrder(GetPositionResponseDto getPositionResponseDto, List<Script1ScheduleOrderMapper> script1ScheduleOrderMappers, String token) throws IOException, InterruptedException {
         for (GetPositionDataDto getPositionDataDto : getPositionResponseDto.getData()) {
             for (Script1ScheduleOrderMapper script1ScheduleOrderMapper : script1ScheduleOrderMappers) {
                 if (getPositionDataDto.getInstrumentToken().equalsIgnoreCase(script1ScheduleOrderMapper.getInstrumentToken()) && getPositionDataDto.getQuantity() != 0) {
@@ -95,13 +114,13 @@ public class Scrip1DailyOrderSchedular {
         }
     }
 
-    public String getTokenDetails() throws UpstoxException {
+    private String getTokenDetails() throws UpstoxException {
         Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(environment.getProperty("email_id"));
         UpstoxLogin upstoxLogin = optionalUpstoxLogin.orElseThrow(() -> new UpstoxException("There is no account for the mail id"));
         return upstoxLogin.getAccess_token();
     }
 
-    public GetPositionResponseDto getAllPositionCall(String token) throws UnirestException, JsonProcessingException {
+    private GetPositionResponseDto getAllPositionCall(String token) throws UnirestException, JsonProcessingException {
         log.info("Fetch the current position we are holding");
         Unirest.setTimeouts(0, 0);
         com.mashape.unirest.http.HttpResponse<String> getAllPositionResponse = Unirest.get(environment.getProperty("upstox_url") + environment.getProperty("get_position"))
@@ -114,7 +133,27 @@ public class Scrip1DailyOrderSchedular {
         return objectMapper.readValue(getAllPositionResponse.getBody(), GetPositionResponseDto.class);
     }
 
-    public static List<Script1ScheduleOrderMapper> convertIterableToListSchedularOrderMapper(Iterable<Script1ScheduleOrderMapper> iterable) {
+    private AtomicBoolean validateNonWorkingDays() {
+        AtomicBoolean flag = new AtomicBoolean(false);
+        Iterable<ExceptionalDayMapper> exceptionalDayMappers = exceptionalDayMapperRepository.findAll();
+        Iterable<HolidayMapper> holidayMappers = holidayMapperRepository.findAll();
+        holidayMappers.forEach((holidayMapper) -> {
+            if (LocalDate.now().equals(holidayMapper.getDate())) {
+                flag.set(true);
+            }
+        });
+        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            flag.set(true);
+        }
+        exceptionalDayMappers.forEach((exceptionalDayMapper) -> {
+            if (LocalDate.now().equals(exceptionalDayMapper.getDate())) {
+                flag.set(false);
+            }
+        });
+        return flag;
+    }
+
+    private static List<Script1ScheduleOrderMapper> convertIterableToListSchedularOrderMapper(Iterable<Script1ScheduleOrderMapper> iterable) {
         List<Script1ScheduleOrderMapper> list = new ArrayList<>();
 
         for (Script1ScheduleOrderMapper item : iterable) {
