@@ -24,4 +24,5 @@ public class Script1FutureMapping {
     private LocalDate expiryDate;
     private String symbolName;
     private Integer quantity;
+    private String scriptName;
 }

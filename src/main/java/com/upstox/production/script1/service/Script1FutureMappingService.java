@@ -43,7 +43,7 @@ public class Script1FutureMappingService {
                 .instrumentToken(futureMapperRequestDto.getInstrument_token())
                 .expiryDate(futureMapperRequestDto.getExpiry_date())
                 .symbolName(futureMapperRequestDto.getSymbolName())
-                .quantity(futureMapperRequestDto.getQuantity()).build();
+                .quantity(futureMapperRequestDto.getQuantity()).scriptName(futureMapperRequestDto.getScriptName()).build();
     }
 
     public void deleteAllFutureMapping() {

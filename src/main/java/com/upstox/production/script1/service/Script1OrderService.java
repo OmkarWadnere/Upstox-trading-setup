@@ -114,7 +114,7 @@ public class Script1OrderService {
                 log.info("Future mapping has be already done or you forgot to add upcoming future mapping please check by adding nextFutureMapping the date you are expecting");
                 return;
             }
-            log.info("Next Future data recived : " + nextFutureMappingsOptional.get());
+            log.info("Next Future data received : " + nextFutureMappingsOptional.get());
             script1FutureMappingRepository.deleteById(futureMapping.getId());
 
             Script1FutureMapping futureMappingToNextExpiryAfter12Pm = Script1FutureMapping.builder()
@@ -476,13 +476,17 @@ public class Script1OrderService {
     private double calculateRiskToRewardRatioForBuy(OrderRequestDto orderRequestDto, OrderData orderData, String token) {
             double entryPrice = orderData.getData().getAveragePrice();
             double stoplossPrice = orderRequestDto.getStoplossPrice();
-            return entryPrice + ((entryPrice-stoplossPrice) * 2);
+            double target = entryPrice - stoplossPrice;
+            double reward = target * 2;
+            return entryPrice + reward;
     }
 
     private double calculateRiskToRewardRatioForSell(OrderRequestDto orderRequestDto, OrderData orderData, String  token) {
         double entryPrice = orderData.getData().getPrice();
         double stoplossPrice = orderRequestDto.getStoplossPrice();
-        return entryPrice - ((stoplossPrice - entryPrice)* 2);
+        double target = stoplossPrice - entryPrice;
+        double reward = target * 2;
+        return entryPrice - reward;
     }
 
     private void placeBuyTargetOrder(OrderRequestDto orderRequestDto, OrderData orderData, double targetPrice, String token) throws UpstoxException, IOException, InterruptedException {
@@ -526,7 +530,7 @@ public class Script1OrderService {
         if (placedOrderDetails.getStatus().equalsIgnoreCase("success")) {
             throw new UpstoxException("There is some error in placing target order for buy : " + orderRequestDto);
         }
-        script1TargetOrderMapperRepository.save(Script1TargetOrderMapper.builder().orderId(placedOrderDetails.getData().getOrderId()).build());
+        script1TargetOrderMapperRepository.save(Script1TargetOrderMapper.builder().orderId(placedOrderDetails.getData().getOrderId()).tradingsymbol(orderData.getData().getTradingSymbol()).build());
     }
 
     private void placeSellTargetOrder(OrderRequestDto orderRequestDto, OrderData orderData, double targetPrice, String token) throws UpstoxException, IOException, InterruptedException {
@@ -571,77 +575,127 @@ public class Script1OrderService {
         if (placedOrderDetails.getStatus().equalsIgnoreCase("success")) {
             throw new UpstoxException("There is some error in placing target order for buy : " + orderRequestDto);
         }
-        script1TargetOrderMapperRepository.save(Script1TargetOrderMapper.builder().orderId(placedOrderDetails.getData().getOrderId()).build());
+        script1TargetOrderMapperRepository.save(Script1TargetOrderMapper.builder().orderId(placedOrderDetails.getData().getOrderId()).tradingsymbol(futureMapping.getInstrumentToken()).build());
     }
 
     private void cancelAllTargetOrder(String token) throws IOException, InterruptedException, UnirestException, UpstoxException {
-        Iterable<Script1TargetOrderMapper> orderMapperIterable = script1TargetOrderMapperRepository.findAll();
-        List<Script1TargetOrderMapper> script1TargetOrderMappers = convertIterableToListOrderMapper(orderMapperIterable);
-        log.info("The order we are trying to cancel is : " + script1TargetOrderMappers);
-
-        if (script1TargetOrderMappers.isEmpty()) {
-            log.info("There is no order available in our DB");
+        //get All order book
+        com.mashape.unirest.http.HttpResponse<String> response = Unirest.get("https://api.upstox.com/v2/order/retrieve-all")
+                .header("Accept", "application/json")
+                .header("Authorization", toString())
+                .asString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNodeOrderDetails = objectMapper.readTree(response.getBody());
+        String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
+        if (statusOrderDetails.equalsIgnoreCase("error")) {
+            log.info("The order is of previous day so we can't perform any operation on this!!");
             return;
         }
+        System.out.println(response.getBody());
+        TradeResponse tradeResponse = objectMapper.readValue(response.getBody(), TradeResponse.class);
 
-        for (Script1TargetOrderMapper script1TargetOrderMapper : script1TargetOrderMappers)
-        {
-            //get order status first then cancel
-            log.info("fetch the order status which we want to cancel : " + script1TargetOrderMapper);
-            String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + script1TargetOrderMapper.getOrderId();
+        for (TradeDetails tradeDetails : tradeResponse.getData()) {
+            Iterable<Script1FutureMapping> futureMappingIterable = script1FutureMappingRepository.findAll();
+            List<Script1FutureMapping> script1FutureMappings = convertIterableToListFutureMapper(futureMappingIterable);
+            for (Script1FutureMapping script1FutureMapping : script1FutureMappings) {
+                if (tradeDetails.getTradingsymbol().contains(script1FutureMapping.getScriptName()) && tradeDetails.getStatus().equalsIgnoreCase("open")) {
+                    String cancelOrderUrl = environment.getProperty("upstox_url") + environment.getProperty("cancel_order") + tradeDetails.getOrderId();
 
-            com.mashape.unirest.http.HttpResponse<String> orderDetailsResponse = Unirest.get(orderDetailsUrl)
-                    .header("Accept", "application/json")
-                    .header("Authorization", token)
-                    .asString();
-            ObjectMapper objectMapper = new ObjectMapper();
+                    com.mashape.unirest.http.HttpResponse<String> orderCancelResponse = Unirest.delete(cancelOrderUrl)
+                            .header("Accept", "application/json")
+                            .header("Authorization", token)
+                            .asString();
 
-            log.info("Received order status from server is : "+ orderDetailsResponse.getBody());
-            JsonNode jsonNodeOrderDetails = objectMapper.readTree(orderDetailsResponse.getBody());
-            String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
-            if (statusOrderDetails.equalsIgnoreCase("error")) {
-                log.info("The order is of previous day so we can't perform any operation on this!!");
-                script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
-                continue;
-            }
+                    log.info("The order status we have received to cancel order is : " + orderCancelResponse.getBody());
+                    JsonNode jsonNode = objectMapper.readTree(orderCancelResponse.getBody());
+                    String status = jsonNode.get("status").asText();
+                    if (status.equalsIgnoreCase("error")) {
+                        log.info("Cancel of already cancelled/rejected/completed order is not allowed");
+                        continue;
+                    }
+                    log.info("We are cancelling the order for the order details : "+ orderCancelResponse.getBody());
+                    OrderResponse orderResponse = objectMapper.readValue(orderCancelResponse.getBody(), OrderResponse.class);
 
-            OrderData orderData = objectMapper.readValue(orderDetailsResponse.getBody(), OrderData.class);
-            log.info("Received order data converted to object"+ orderData.toString());
-
-            if (!orderData.getStatus().equalsIgnoreCase("success")) {
-                throw new UpstoxException("There is some error in getting order details");
-            }
-
-            if (!orderData.getData().getOrderStatus().equalsIgnoreCase("complete")) {
-                log.info("Cancelling the order for order id is : " + script1TargetOrderMapper.getOrderId());
-                String cancelOrderUrl = environment.getProperty("upstox_url") + environment.getProperty("cancel_order") + script1TargetOrderMapper.getOrderId();
-
-                com.mashape.unirest.http.HttpResponse<String> orderCancelResponse = Unirest.delete(cancelOrderUrl)
-                        .header("Accept", "application/json")
-                        .header("Authorization", token)
-                        .asString();
-                log.info("The order status we have received to cancel order is : " + orderCancelResponse.getBody());
-                JsonNode jsonNode = objectMapper.readTree(orderCancelResponse.getBody());
-                String status = jsonNode.get("status").asText();
-                if (status.equalsIgnoreCase("error")) {
-                    log.info("Cancel of already cancelled/rejected/completed order is not allowed");
-                    script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
-                    continue;
+//                    if (orderResponse.getStatus().equalsIgnoreCase("success")) {
+//                        script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+//                    } else {
+//                        script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+//                        log.error("There is some error to cancel order can you please check manually!!");
+//                    }
+//                    script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+                    log.info("Response Code of order cancel : " + orderCancelResponse.getStatus());
+                    log.info("Response Body of order cancel : " + orderCancelResponse.getBody());
                 }
-                log.info("We are cancelling the order for the order details : "+ orderCancelResponse.getBody());
-                OrderResponse orderResponse = objectMapper.readValue(orderCancelResponse.getBody(), OrderResponse.class);
-
-                if (orderResponse.getStatus().equalsIgnoreCase("success")) {
-                    script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
-                } else {
-                    script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
-                    log.error("There is some error to cancel order can you please check manually!!");
-                }
-                script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
-                log.info("Response Code of order cancel : " + orderCancelResponse.getStatus());
-                log.info("Response Body of order cancel : " + orderCancelResponse.getBody());
             }
+
         }
+
+//        Iterable<Script1TargetOrderMapper> orderMapperIterable = script1TargetOrderMapperRepository.findAll();
+//        List<Script1TargetOrderMapper> script1TargetOrderMappers = convertIterableToListOrderMapper(orderMapperIterable);
+//        log.info("The order we are trying to cancel is : " + script1TargetOrderMappers);
+//
+//        if (script1TargetOrderMappers.isEmpty()) {
+//            log.info("There is no order available in our DB");
+//            return;
+//        }
+//
+//        for (Script1TargetOrderMapper script1TargetOrderMapper : script1TargetOrderMappers)
+//        {
+//            //get order status first then cancel
+//            log.info("fetch the order status which we want to cancel : " + script1TargetOrderMapper);
+//            String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + script1TargetOrderMapper.getOrderId();
+//
+//            com.mashape.unirest.http.HttpResponse<String> orderDetailsResponse = Unirest.get(orderDetailsUrl)
+//                    .header("Accept", "application/json")
+//                    .header("Authorization", token)
+//                    .asString();
+//
+//            log.info("Received order status from server is : "+ orderDetailsResponse.getBody());
+//            JsonNode jsonNodeOrderDetails = objectMapper.readTree(orderDetailsResponse.getBody());
+//            String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
+//            if (statusOrderDetails.equalsIgnoreCase("error")) {
+//                log.info("The order is of previous day so we can't perform any operation on this!!");
+//                script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+//                continue;
+//            }
+//
+//            OrderData orderData = objectMapper.readValue(orderDetailsResponse.getBody(), OrderData.class);
+//            log.info("Received order data converted to object"+ orderData.toString());
+//
+//            if (!orderData.getStatus().equalsIgnoreCase("success")) {
+//                throw new UpstoxException("There is some error in getting order details");
+//            }
+//
+//            if (!orderData.getData().getOrderStatus().equalsIgnoreCase("complete")) {
+//                log.info("Cancelling the order for order id is : " + script1TargetOrderMapper.getOrderId());
+//                String cancelOrderUrl = environment.getProperty("upstox_url") + environment.getProperty("cancel_order") + script1TargetOrderMapper.getOrderId();
+//
+//                com.mashape.unirest.http.HttpResponse<String> orderCancelResponse = Unirest.delete(cancelOrderUrl)
+//                        .header("Accept", "application/json")
+//                        .header("Authorization", token)
+//                        .asString();
+//                log.info("The order status we have received to cancel order is : " + orderCancelResponse.getBody());
+//                JsonNode jsonNode = objectMapper.readTree(orderCancelResponse.getBody());
+//                String status = jsonNode.get("status").asText();
+//                if (status.equalsIgnoreCase("error")) {
+//                    log.info("Cancel of already cancelled/rejected/completed order is not allowed");
+//                    script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+//                    continue;
+//                }
+//                log.info("We are cancelling the order for the order details : "+ orderCancelResponse.getBody());
+//                OrderResponse orderResponse = objectMapper.readValue(orderCancelResponse.getBody(), OrderResponse.class);
+//
+//                if (orderResponse.getStatus().equalsIgnoreCase("success")) {
+//                    script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+//                } else {
+//                    script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+//                    log.error("There is some error to cancel order can you please check manually!!");
+//                }
+//                script1TargetOrderMapperRepository.deleteById(script1TargetOrderMapper.getId());
+//                log.info("Response Code of order cancel : " + orderCancelResponse.getStatus());
+//                log.info("Response Body of order cancel : " + orderCancelResponse.getBody());
+//            }
+//        }
     }
 
     private static List<Script1TargetOrderMapper> convertIterableToListOrderMapper(Iterable<Script1TargetOrderMapper> iterable) {

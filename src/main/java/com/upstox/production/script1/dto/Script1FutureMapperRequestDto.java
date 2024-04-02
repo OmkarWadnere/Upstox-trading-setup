@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 @Getter
@@ -28,4 +29,7 @@ public class Script1FutureMapperRequestDto {
     private String symbolName;
     @NotNull(message = "quantity can't be null")
     private Integer quantity;
+    @NotNull(message = "scriptName can't be null")
+    @Pattern(regexp = "[A-Z]{0,}", message = "scriptName should be in upparcase only")
+    private String scriptName;
 }

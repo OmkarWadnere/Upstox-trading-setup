@@ -19,4 +19,5 @@ public class Script1TargetOrderMapper {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String orderId;
+    private String tradingsymbol;
 }
