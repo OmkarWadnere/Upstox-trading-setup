@@ -44,16 +44,17 @@ public class GetHoldingTest {
     @GetMapping("/get")
     @ResponseStatus(HttpStatus.OK)
     public TradeResponse getHoldings() throws UnirestException, JsonProcessingException {
-        String token = "Bearer eyJ0eXAiOiJKV1QiLCJrZXlfaWQiOiJza192MS4wIiwiYWxnIjoiSFMyNTYifQ.eyJzdWIiOiI2TUFFQksiLCJqdGkiOiI2NjBjMDM2YWFhNmFmYTU5MGVkYzUyZDEiLCJpc011bHRpQ2xpZW50IjpmYWxzZSwiaXNBY3RpdmUiOnRydWUsInNjb3BlIjpbImludGVyYWN0aXZlIiwiaGlzdG9yaWNhbCJdLCJpYXQiOjE3MTIwNjMzMzgsImlzcyI6InVkYXBpLWdhdGV3YXktc2VydmljZSIsImV4cCI6MTcxMjA5NTIwMH0.YLIIVv_X9gGVgdxD51i6tm5nEWSnJd9lwaEKHhwsers";
+        String token = "Bearer eyJ0eXAiOiJKV1QiLCJrZXlfaWQiOiJza192MS4wIiwiYWxnIjoiSFMyNTYifQ.eyJzdWIiOiI2TUFFQksiLCJqdGkiOiI2NjBjYmUyZmFhNmFmYTU5MGVkYzU2ODMiLCJpc011bHRpQ2xpZW50IjpmYWxzZSwiaXNBY3RpdmUiOnRydWUsInNjb3BlIjpbImludGVyYWN0aXZlIiwiaGlzdG9yaWNhbCJdLCJpYXQiOjE3MTIxMTExNTEsImlzcyI6InVkYXBpLWdhdGV3YXktc2VydmljZSIsImV4cCI6MTcxMjE4MTYwMH0.GA5iwPLXr0vMvA6F55II7-DxNfi491cd2PWgvLhJz-8";
         com.mashape.unirest.http.HttpResponse<String> response = Unirest.get("https://api.upstox.com/v2/order/retrieve-all")
                 .header("Accept", "application/json")
-                .header("Authorization", toString())
+                .header("Authorization", token)
                 .asString();
+        System.out.println(response.getBody());
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNodeOrderDetails = objectMapper.readTree(response.getBody());
             String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
             if (statusOrderDetails.equalsIgnoreCase("error")) {
-                log.info("The order is of previous day so we can't perform any operation on this!!");
+                log.info("There is no order book available for today or there is some error in fetching the order book");
                 return new TradeResponse();
             }
         System.out.println(response.getBody());
