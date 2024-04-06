@@ -20,14 +20,14 @@
 
     <!-- Root Logger Configuration -->
     <root level="ERROR">
-        <appender-ref ref="Console" />
-        <appender-ref ref="File" />
+        <appender-ref ref="Console"/>
+        <appender-ref ref="File"/>
     </root>
 
     <!-- Logger Configuration for the com.upstox package -->
     <logger name="com.upstox" level="DEBUG">
-        <appender-ref ref="Console" />
-        <appender-ref ref="File" />
+        <appender-ref ref="Console"/>
+        <appender-ref ref="File"/>
     </logger>
 
 </configuration>

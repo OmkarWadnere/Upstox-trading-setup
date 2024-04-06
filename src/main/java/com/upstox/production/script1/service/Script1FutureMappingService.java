@@ -17,6 +17,16 @@ public class Script1FutureMappingService {
     @Autowired
     private Script1FutureMappingRepository script1FutureMappingRepository;
 
+    private static List<Script1FutureMapping> convertIterableToListFutureMapper(Iterable<Script1FutureMapping> iterable) {
+        List<Script1FutureMapping> list = new ArrayList<>();
+
+        for (Script1FutureMapping item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
     public String addFutureMapping(Script1FutureMapperRequestDto futureMapperRequestDto) throws UpstoxException {
 
         // validate data is already present or not
@@ -53,15 +63,5 @@ public class Script1FutureMappingService {
     public List<Script1FutureMapping> getAllFutureMappings() {
         Iterable<Script1FutureMapping> futureMappingIterable = script1FutureMappingRepository.findAll();
         return convertIterableToListFutureMapper(futureMappingIterable);
-    }
-
-    private static List<Script1FutureMapping> convertIterableToListFutureMapper(Iterable<Script1FutureMapping> iterable) {
-        List<Script1FutureMapping> list = new ArrayList<>();
-
-        for (Script1FutureMapping item : iterable) {
-            list.add(item);
-        }
-
-        return list;
     }
 }

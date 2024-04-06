@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.upstox.production.centralconfiguration.dto.*;
+import com.upstox.production.centralconfiguration.dto.GetPositionDataDto;
+import com.upstox.production.centralconfiguration.dto.GetPositionResponseDto;
+import com.upstox.production.centralconfiguration.dto.OrderRequestDto;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
@@ -30,7 +32,12 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @PropertySource("classpath:data.properties")
@@ -55,6 +62,36 @@ public class Script2OrderService {
     @Autowired
     private Script2NextFutureMapperRepository script2NextFutureMapperRepository;
 
+    public static List<Script2OrderMapper> convertIterableToListOrderMapper(Iterable<Script2OrderMapper> iterable) {
+        List<Script2OrderMapper> list = new ArrayList<>();
+
+        for (Script2OrderMapper item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
+    public static List<Script2NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script2NextFutureMapping> iterable) {
+        List<Script2NextFutureMapping> list = new ArrayList<>();
+
+        for (Script2NextFutureMapping item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
+    public static List<Script2FutureMapping> convertIterableToListFutureMapper(Iterable<Script2FutureMapping> iterable) {
+        List<Script2FutureMapping> list = new ArrayList<>();
+
+        for (Script2FutureMapping item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
     public String buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         // Process buy order Request Data
@@ -76,7 +113,6 @@ public class Script2OrderService {
         return orderDetails;
 
     }
-
 
     public String sellOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
@@ -123,7 +159,6 @@ public class Script2OrderService {
             log.info("The current future expiry has been added successfully !! " + futureMappingToNextExpiryAfter12Pm);
         }
     }
-
 
     public String buyOrderProcess(String token, OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
@@ -236,7 +271,7 @@ public class Script2OrderService {
                         .build();
                 receiveNewOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 log.info("Market order sent for BUY means previous square off : " + receiveNewOrderResponse.body());
-            }else {
+            } else {
                 log.info("There is no existing sell position to square off the trade at time : " + LocalDateTime.now());
             }
 
@@ -295,7 +330,7 @@ public class Script2OrderService {
         Script2FutureMapping futureMapping = getFutureMapping(orderRequestDto);
 
         for (GetPositionDataDto positionDataDto : getPositionResponseDto.getData()) {
-            if (positionDataDto.getInstrumentToken().equalsIgnoreCase(futureMapping.getInstrumentToken()) && positionDataDto.getQuantity() !=0) {
+            if (positionDataDto.getInstrumentToken().equalsIgnoreCase(futureMapping.getInstrumentToken()) && positionDataDto.getQuantity() != 0) {
                 return true;
             }
         }
@@ -320,7 +355,6 @@ public class Script2OrderService {
         return objectMapper.readValue(getAllPositionResponse.getBody(), GetPositionResponseDto.class);
     }
 
-
     public UpstoxLogin getLoginDetails() throws UpstoxException {
         log.info("Find the user is available in our DB for provided email Id");
         Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(environment.getProperty("email_id"));
@@ -331,8 +365,7 @@ public class Script2OrderService {
         return optionalUpstoxLogin.get();
     }
 
-
-    public  OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
+    public OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(requestData);
         log.info("Buy Order Request process has started for the data : " + jsonNode.toString());
@@ -366,7 +399,7 @@ public class Script2OrderService {
                 .build();
     }
 
-    public  OrderRequestDto processSellOrderRequestData(String requestData) throws JsonProcessingException {
+    public OrderRequestDto processSellOrderRequestData(String requestData) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(requestData);
         log.info("Buy Order Request process has started for the data : " + jsonNode.toString());
@@ -398,35 +431,5 @@ public class Script2OrderService {
                 .transaction_type(map.get("TYPE").trim().equals("SE") ? "SELL" : "BUY")
                 .stoplossPrice(Double.parseDouble(map.get("entryPrice")))
                 .build();
-    }
-
-    public static List<Script2OrderMapper> convertIterableToListOrderMapper(Iterable<Script2OrderMapper> iterable) {
-        List<Script2OrderMapper> list = new ArrayList<>();
-
-        for (Script2OrderMapper item : iterable) {
-            list.add(item);
-        }
-
-        return list;
-    }
-
-    public static List<Script2NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script2NextFutureMapping> iterable) {
-        List<Script2NextFutureMapping> list = new ArrayList<>();
-
-        for (Script2NextFutureMapping item : iterable) {
-            list.add(item);
-        }
-
-        return list;
-    }
-
-    public static List<Script2FutureMapping> convertIterableToListFutureMapper(Iterable<Script2FutureMapping> iterable) {
-        List<Script2FutureMapping> list = new ArrayList<>();
-
-        for (Script2FutureMapping item : iterable) {
-            list.add(item);
-        }
-
-        return list;
     }
 }

@@ -8,7 +8,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -30,7 +35,7 @@ public class Script1OrderController {
 
     @PostMapping("/tradingView/sellOrder")
     public PlacedOrderDetails script1SellOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-                                            @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
+                                                        @RequestBody String script1Payload) throws UpstoxException, IOException, UnirestException, InterruptedException {
         log.info("Data received to place order is : " + script1Payload);
         return script1OrderService.sellOrderExecution(script1Payload);
     }

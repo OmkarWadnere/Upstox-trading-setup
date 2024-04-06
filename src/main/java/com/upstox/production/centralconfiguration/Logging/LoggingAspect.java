@@ -9,11 +9,10 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class LoggingAspect {
-	public static final Log LOGGER=LogFactory.getLog(LoggingAspect.class);
+    public static final Log LOGGER = LogFactory.getLog(LoggingAspect.class);
 
-	@AfterThrowing(pointcut = "execution(* com.upstox..*(..))",throwing = "exception")
-	public void logFromService(Exception exception)
-	{
-		LOGGER.error(exception.getMessage());
-	}
+    @AfterThrowing(pointcut = "execution(* com.upstox..*(..))", throwing = "exception")
+    public void logFromService(Exception exception) {
+        LOGGER.error(exception.getMessage());
+    }
 }

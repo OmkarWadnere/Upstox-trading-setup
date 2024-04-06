@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface ExceptionalDayMapperRepository extends CrudRepository<ExceptionalDayMapper, Integer> {
 
     Optional<ExceptionalDayMapper> findByOccasion(String occasion);
+
     Optional<ExceptionalDayMapper> findByDate(LocalDate date);
 }

@@ -51,6 +51,16 @@ public class Scrip1DailyOrderSchedular {
     @Autowired
     private HolidayMapperRepository holidayMapperRepository;
 
+    private static List<Script1ScheduleOrderMapper> convertIterableToListSchedularOrderMapper(Iterable<Script1ScheduleOrderMapper> iterable) {
+        List<Script1ScheduleOrderMapper> list = new ArrayList<>();
+
+        for (Script1ScheduleOrderMapper item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
     @Scheduled(cron = "20 15 9 * * ?") // Adjust the cron expression for 9:15:20 AM every morning
     public void Script1DailyTargetOrder() throws UnirestException, IOException, UpstoxException, InterruptedException {
 
@@ -81,10 +91,10 @@ public class Scrip1DailyOrderSchedular {
                 if (getPositionDataDto.getInstrumentToken().equalsIgnoreCase(script1ScheduleOrderMapper.getInstrumentToken()) && getPositionDataDto.getQuantity() != 0) {
                     int quantity = getPositionDataDto.getQuantity() < 0 ? getPositionDataDto.getQuantity() * -1 : getPositionDataDto.getQuantity();
                     String requestBody = "{"
-                            + "\"quantity\": "+ quantity + ","
+                            + "\"quantity\": " + quantity + ","
                             + "\"product\": \"D\","
                             + "\"validity\": \"DAY\","
-                            + "\"price\": "+ script1ScheduleOrderMapper.getTargetPrice() + ","
+                            + "\"price\": " + script1ScheduleOrderMapper.getTargetPrice() + ","
                             + "\"tag\": \"string\","
                             + "\"instrument_token\": \"" + script1ScheduleOrderMapper.getInstrumentToken() + "\","
                             + "\"order_type\": \"LIMIT\","
@@ -151,15 +161,5 @@ public class Scrip1DailyOrderSchedular {
             }
         });
         return flag;
-    }
-
-    private static List<Script1ScheduleOrderMapper> convertIterableToListSchedularOrderMapper(Iterable<Script1ScheduleOrderMapper> iterable) {
-        List<Script1ScheduleOrderMapper> list = new ArrayList<>();
-
-        for (Script1ScheduleOrderMapper item : iterable) {
-            list.add(item);
-        }
-
-        return list;
     }
 }

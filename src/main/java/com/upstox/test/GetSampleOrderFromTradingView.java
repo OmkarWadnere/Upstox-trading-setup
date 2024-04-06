@@ -4,7 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +52,7 @@ public class GetSampleOrderFromTradingView {
                 map.put(subParts[0], subParts[1]);
             }
             System.out.println("Order Name Details Node: " + parts);
-            for (Map.Entry<String, String> entryMap: map.entrySet()) {
+            for (Map.Entry<String, String> entryMap : map.entrySet()) {
                 System.out.println("Map data : " + entryMap.getKey() + " " + entryMap.getValue());
             }
 

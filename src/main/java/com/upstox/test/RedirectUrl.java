@@ -1,6 +1,5 @@
 package com.upstox.test;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,14 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.websocket.server.PathParam;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.nio.charset.StandardCharsets;
 
 @RestController
@@ -24,7 +20,7 @@ public class RedirectUrl {
 
     @GetMapping("/here")
     public ResponseEntity<String> redirected(@RequestParam String code) throws IOException {
-        System.out.println("here we came " +code);
+        System.out.println("here we came " + code);
         String apiUrl = "https://api.upstox.com/v2/login/authorization/token";
         HttpURLConnection con = (HttpURLConnection) new java.net.URL(apiUrl).openConnection();
 
@@ -37,8 +33,8 @@ public class RedirectUrl {
 
         // Enable input/output streams
         con.setDoOutput(true);
-                // Set the request data
-                String data = "code="+ code +
+        // Set the request data
+        String data = "code=" + code +
                 "&client_id=e2809017-3a4e-4821-97ca-c21c63cd6082" +
                 "&client_secret=1zb1hyt7ck" +
                 "&redirect_uri=http://localhost:8080/redirect/here" +

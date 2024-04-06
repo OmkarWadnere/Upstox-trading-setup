@@ -14,10 +14,10 @@ import java.io.IOException;
 public class UpstoxTradingSetupApplication {
 
 
-	public static void main(String[] args) throws IOException, UnirestException, InterruptedException {
-		SpringApplication.run(UpstoxTradingSetupApplication.class, args);
-		System.out.println("Hello");
+    public static void main(String[] args) throws IOException, UnirestException, InterruptedException {
+        SpringApplication.run(UpstoxTradingSetupApplication.class, args);
+        System.out.println("Hello");
 
-	}
+    }
 
 }

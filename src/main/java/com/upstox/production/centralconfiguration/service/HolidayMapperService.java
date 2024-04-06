@@ -1,8 +1,6 @@
 package com.upstox.production.centralconfiguration.service;
 
-import com.upstox.production.centralconfiguration.dto.ExceptionalDayMapperDto;
 import com.upstox.production.centralconfiguration.dto.HolidayMapperDto;
-import com.upstox.production.centralconfiguration.entity.ExceptionalDayMapper;
 import com.upstox.production.centralconfiguration.entity.HolidayMapper;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.repository.HolidayMapperRepository;
@@ -20,6 +18,16 @@ public class HolidayMapperService {
 
     @Autowired
     private HolidayMapperRepository holidayMapperRepository;
+
+    private static List<HolidayMapper> convertIterabletoHOlidayMapperList(Iterable<HolidayMapper> iterable) {
+        List<HolidayMapper> list = new ArrayList<>();
+
+        for (HolidayMapper item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
 
     public HolidayMapper addHoliday(HolidayMapperDto holidayMapperDto) throws UpstoxException {
         Optional<HolidayMapper> holidayMapperRepositoryByDate = holidayMapperRepository.findByDate(holidayMapperDto.getDate());
@@ -49,15 +57,5 @@ public class HolidayMapperService {
 
     public void deleteAllHolidays() {
         holidayMapperRepository.deleteAll();
-    }
-
-    private static List<HolidayMapper> convertIterabletoHOlidayMapperList(Iterable<HolidayMapper> iterable) {
-        List<HolidayMapper> list = new ArrayList<>();
-
-        for (HolidayMapper item : iterable) {
-            list.add(item);
-        }
-
-        return list;
     }
 }

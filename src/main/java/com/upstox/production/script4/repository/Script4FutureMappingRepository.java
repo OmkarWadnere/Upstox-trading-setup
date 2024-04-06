@@ -12,5 +12,6 @@ public interface Script4FutureMappingRepository extends CrudRepository<Script4Fu
     Optional<Script4FutureMapping> findByInstrumentToken(String instrumentToken);
 
     Optional<Script4FutureMapping> findByExpiryDate(LocalDate expiryDate);
+
     Optional<Script4FutureMapping> findBySymbolName(String symbolName);
 }

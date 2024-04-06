@@ -13,9 +13,8 @@ public class UpstoxExcpetionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorInfo exceptionHandler(Exception exception)
-    {
-        ErrorInfo errorInfo=new ErrorInfo();
+    public ErrorInfo exceptionHandler(Exception exception) {
+        ErrorInfo errorInfo = new ErrorInfo();
         errorInfo.setErrorMessage(exception.getMessage());
         errorInfo.setErrorCode(HttpStatus.NOT_FOUND.value());
         errorInfo.setTimeStamp(LocalDateTime.now());
@@ -24,9 +23,8 @@ public class UpstoxExcpetionHandler {
 
     @ExceptionHandler(UpstoxException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorInfo upstoxCentralExceptionHandler(UpstoxException upstoxException)
-    {
-        ErrorInfo errorInfo=new ErrorInfo();
+    public ErrorInfo upstoxCentralExceptionHandler(UpstoxException upstoxException) {
+        ErrorInfo errorInfo = new ErrorInfo();
         errorInfo.setErrorMessage(upstoxException.getMessage());
         errorInfo.setErrorCode(HttpStatus.NOT_FOUND.value());
         errorInfo.setTimeStamp(LocalDateTime.now());

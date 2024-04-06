@@ -13,6 +13,7 @@ public interface Script2NextFutureMapperRepository extends CrudRepository<Script
     Optional<Script2NextFutureMapping> findByInstrumentToken(String instrumentToken);
 
     Optional<Script2NextFutureMapping> findByExpiryDate(LocalDate expiryDate);
+
     Optional<Script2NextFutureMapping> findBySymbolName(String symbolName);
 
 }

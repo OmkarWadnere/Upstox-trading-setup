@@ -4,8 +4,8 @@ import org.junit.Test;
 
 class UpstoxTradingSetupApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }

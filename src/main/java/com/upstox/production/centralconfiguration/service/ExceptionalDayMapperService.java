@@ -19,6 +19,16 @@ public class ExceptionalDayMapperService {
     @Autowired
     private ExceptionalDayMapperRepository exceptionalDayMapperRepository;
 
+    private static List<ExceptionalDayMapper> convertIterabletoExxceptionalDayMapperList(Iterable<ExceptionalDayMapper> iterable) {
+        List<ExceptionalDayMapper> list = new ArrayList<>();
+
+        for (ExceptionalDayMapper item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
     public ExceptionalDayMapper addExceptionalDays(ExceptionalDayMapperDto exceptionalDayMapperDto) throws UpstoxException {
         Optional<ExceptionalDayMapper> optionalExceptionalDayMapper = exceptionalDayMapperRepository.findByDate(exceptionalDayMapperDto.getDate());
         if (optionalExceptionalDayMapper.isPresent()) {
@@ -47,15 +57,5 @@ public class ExceptionalDayMapperService {
 
     public void deleteAllExceptionalDay() {
         exceptionalDayMapperRepository.deleteAll();
-    }
-
-    private static List<ExceptionalDayMapper> convertIterabletoExxceptionalDayMapperList(Iterable<ExceptionalDayMapper> iterable) {
-        List<ExceptionalDayMapper> list = new ArrayList<>();
-
-        for (ExceptionalDayMapper item : iterable) {
-            list.add(item);
-        }
-
-        return list;
     }
 }

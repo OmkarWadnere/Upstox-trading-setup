@@ -32,7 +32,12 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @PropertySource("classpath:data.properties")
@@ -57,6 +62,36 @@ public class Script4OrderService {
     @Autowired
     private Script4NextFutureMapperRepository script4NextFutureMapperRepository;
 
+    public static List<Script4OrderMapper> convertIterableToListOrderMapper(Iterable<Script4OrderMapper> iterable) {
+        List<Script4OrderMapper> list = new ArrayList<>();
+
+        for (Script4OrderMapper item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
+    public static List<Script4NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script4NextFutureMapping> iterable) {
+        List<Script4NextFutureMapping> list = new ArrayList<>();
+
+        for (Script4NextFutureMapping item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
+    public static List<Script4FutureMapping> convertIterableToListFutureMapper(Iterable<Script4FutureMapping> iterable) {
+        List<Script4FutureMapping> list = new ArrayList<>();
+
+        for (Script4FutureMapping item : iterable) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
     public String buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         // Process buy order Request Data
@@ -78,7 +113,6 @@ public class Script4OrderService {
         return orderDetails;
 
     }
-
 
     public String sellOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
@@ -126,7 +160,6 @@ public class Script4OrderService {
         }
     }
 
-
     public String buyOrderProcess(String token, OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException {
 
         log.info("Placing the new Entry order for : " + orderRequestDto);
@@ -153,12 +186,12 @@ public class Script4OrderService {
             // Create the HttpRequest
             String orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(orderUrl))
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .header("Authorization", token)
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
+                    .uri(URI.create(orderUrl))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("Authorization", token)
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
             receiveNewOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             log.info("Market order sent for BUY entry : " + receiveNewOrderResponse.body());
         }
@@ -238,7 +271,7 @@ public class Script4OrderService {
                         .build();
                 receiveNewOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 log.info("Market order sent for BUY means previous square off : " + receiveNewOrderResponse.body());
-            }else {
+            } else {
                 log.info("There is no existing sell position to square off the trade at time : " + LocalDateTime.now());
             }
 
@@ -297,7 +330,7 @@ public class Script4OrderService {
         Script4FutureMapping futureMapping = getFutureMapping(orderRequestDto);
 
         for (GetPositionDataDto positionDataDto : getPositionResponseDto.getData()) {
-            if (positionDataDto.getInstrumentToken().equalsIgnoreCase(futureMapping.getInstrumentToken()) && positionDataDto.getQuantity() !=0) {
+            if (positionDataDto.getInstrumentToken().equalsIgnoreCase(futureMapping.getInstrumentToken()) && positionDataDto.getQuantity() != 0) {
                 return true;
             }
         }
@@ -322,7 +355,6 @@ public class Script4OrderService {
         return objectMapper.readValue(getAllPositionResponse.getBody(), GetPositionResponseDto.class);
     }
 
-
     public UpstoxLogin getLoginDetails() throws UpstoxException {
         log.info("Find the user is available in our DB for provided email Id");
         Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(environment.getProperty("email_id"));
@@ -333,42 +365,41 @@ public class Script4OrderService {
         return optionalUpstoxLogin.get();
     }
 
-
-   public  OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
-       ObjectMapper objectMapper = new ObjectMapper();
-       JsonNode jsonNode = objectMapper.readTree(requestData);
+    public OrderRequestDto processBuyOrderRequestData(String requestData) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(requestData);
         log.info("Buy Order Request process has started for the data : " + jsonNode.toString());
-       // Continue with your processing
-       double price = jsonNode.get("price").asDouble();
-       int quantity = jsonNode.get("quantity").asInt();
-       String instrumentName = jsonNode.get("instrument_name").asText();
-       String orderType = jsonNode.get("order_type").asText();
-       String transactionType = jsonNode.get("transaction_type").asText();
+        // Continue with your processing
+        double price = jsonNode.get("price").asDouble();
+        int quantity = jsonNode.get("quantity").asInt();
+        String instrumentName = jsonNode.get("instrument_name").asText();
+        String orderType = jsonNode.get("order_type").asText();
+        String transactionType = jsonNode.get("transaction_type").asText();
 
-       log.info("Convert order_name into separate JsoneNode");
-       // If you need to convert order_name into a separate JsonNode with key-value pairs
-       String[] parts = jsonNode.get("order_name").toString().replace("\"", "").split(" ");
-       Map<String, String> map = new HashMap<>();
-       log.info("order_name parts : " + Arrays.toString(parts));
-       for (String part : parts) {
-           log.info("Single parts : " + part);
-           String[] subParts = part.split(":");
-           map.put(subParts[0], subParts[1]);
-       }
+        log.info("Convert order_name into separate JsoneNode");
+        // If you need to convert order_name into a separate JsonNode with key-value pairs
+        String[] parts = jsonNode.get("order_name").toString().replace("\"", "").split(" ");
+        Map<String, String> map = new HashMap<>();
+        log.info("order_name parts : " + Arrays.toString(parts));
+        for (String part : parts) {
+            log.info("Single parts : " + part);
+            String[] subParts = part.split(":");
+            map.put(subParts[0], subParts[1]);
+        }
 
-       log.info("The type of order we have received : " + orderType);
+        log.info("The type of order we have received : " + orderType);
 
-       return OrderRequestDto.builder()
-               .quantity(quantity)
-               .price(Double.parseDouble(map.get("entryPrice")))
-               .instrument_name(instrumentName)
-               .order_type("LIMIT")
-               .transaction_type(map.get("TYPE").trim().equals("LE") ? "BUY" : "SELL")
-               .stoplossPrice(Double.parseDouble(map.get("entryPrice")))
-               .build();
-   }
+        return OrderRequestDto.builder()
+                .quantity(quantity)
+                .price(Double.parseDouble(map.get("entryPrice")))
+                .instrument_name(instrumentName)
+                .order_type("LIMIT")
+                .transaction_type(map.get("TYPE").trim().equals("LE") ? "BUY" : "SELL")
+                .stoplossPrice(Double.parseDouble(map.get("entryPrice")))
+                .build();
+    }
 
-    public  OrderRequestDto processSellOrderRequestData(String requestData) throws JsonProcessingException {
+    public OrderRequestDto processSellOrderRequestData(String requestData) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(requestData);
         log.info("Buy Order Request process has started for the data : " + jsonNode.toString());
@@ -400,35 +431,5 @@ public class Script4OrderService {
                 .transaction_type(map.get("TYPE").trim().equals("SE") ? "SELL" : "BUY")
                 .stoplossPrice(Double.parseDouble(map.get("entryPrice")))
                 .build();
-    }
-
-    public static List<Script4OrderMapper> convertIterableToListOrderMapper(Iterable<Script4OrderMapper> iterable) {
-        List<Script4OrderMapper> list = new ArrayList<>();
-
-        for (Script4OrderMapper item : iterable) {
-            list.add(item);
-        }
-
-        return list;
-    }
-
-    public static List<Script4NextFutureMapping> convertIterableToListNextFutureMapper(Iterable<Script4NextFutureMapping> iterable) {
-        List<Script4NextFutureMapping> list = new ArrayList<>();
-
-        for (Script4NextFutureMapping item : iterable) {
-            list.add(item);
-        }
-
-        return list;
-    }
-
-    public static List<Script4FutureMapping> convertIterableToListFutureMapper(Iterable<Script4FutureMapping> iterable) {
-        List<Script4FutureMapping> list = new ArrayList<>();
-
-        for (Script4FutureMapping item : iterable) {
-            list.add(item);
-        }
-
-        return list;
     }
 }
