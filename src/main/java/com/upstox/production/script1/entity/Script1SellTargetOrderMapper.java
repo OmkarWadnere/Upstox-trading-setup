@@ -1,6 +1,10 @@
 package com.upstox.production.script1.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,7 +17,7 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Script1TargetOrderMapper {
+public class Script1SellTargetOrderMapper {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
