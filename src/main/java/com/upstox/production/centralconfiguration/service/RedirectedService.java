@@ -4,6 +4,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.upstox.production.banknifty.utility.BankNiftyUtility;
 import com.upstox.production.centralconfiguration.dto.UpstoxLoginDto;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
@@ -36,7 +37,6 @@ public class RedirectedService {
                 .field("redirect_uri", environment.getProperty("redirect_url"))
                 .field("grant_type", "authorization_code").asJson();
         // Print the response
-        System.out.println("Token body : " + response.getBody());
         UpstoxLoginDto upstoxLoginDto = buildUpstoxLoginDtoFromHttpResponse(response.getBody());
         Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(upstoxLoginDto.getEmail());
         UpstoxLogin upstoxLogin = null;
@@ -46,7 +46,7 @@ public class RedirectedService {
         } else {
             upstoxLogin = buildUpstoxLogin(upstoxLoginDto);
         }
-        System.out.println(upstoxLogin);
+        BankNiftyUtility.schedulerToken = "Bearer " + upstoxLogin.getAccess_token();
         return upstoxLoginRepository.save(upstoxLogin);
     }
 

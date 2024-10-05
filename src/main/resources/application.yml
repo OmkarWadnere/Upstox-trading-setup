@@ -1,17 +1,25 @@
-server:
-  port: 443
-  ssl:
-    key-store: keystore.p12
-    key-store-password: Root@123
-    keyStoreType: PKCS12
-    keyAlias: tomcat
+#server:
+#  port: 443
+#  ssl:
+#    key-store: keystore.p12
+#    key-store-password: Root@123
+#    keyStoreType: PKCS12
+#    keyAlias: tomcat
 spring:
   application:
     name: PERSONAL-BROKER
   datasource:
     url: jdbc:mysql://localhost:3306/broker?autoReconnect=true&useSSL=false
     username: root
-    password: Root@123
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 100
+      connection-timeout: 30000  # 30 seconds
+      idle-timeout: 600000       # 10 minutes
+      max-lifetime: 1800000      # 30 minutes
+      pool-name: HikariPool-1
   jpa:
     hibernate:
       ddl-auto: update

@@ -15,17 +15,14 @@ public class UpstoxLoginService {
 
     @Autowired
     private UpstoxLoginRepository upstoxLoginRepository;
-
     @Autowired
     private Environment environment;
 
 
     public String getUpstoxLoginUrl() throws UnirestException {
-        System.out.println("client id" + environment.getProperty("client_id"));
         String authorizationURL = "https://api.upstox.com/v2/login/authorization/dialog?client_id=" + environment.getProperty("client_id") + "&redirect_uri=" + environment.getProperty("redirect_url");
         HttpResponse response = Unirest.get(authorizationURL)
                 .asString();
-        System.out.println(response);
         return "https://api.upstox.com/v2/login/authorization/dialog?client_id=" + environment.getProperty("client_id") + "&redirect_uri=" + environment.getProperty("redirect_url");
     }
 }

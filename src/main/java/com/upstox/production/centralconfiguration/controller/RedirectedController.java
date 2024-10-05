@@ -21,7 +21,6 @@ public class RedirectedController {
 
     @GetMapping("/toGetToken")
     public UpstoxLogin redirected(@RequestParam String code) throws IOException, UnirestException {
-        System.out.println("code" + code);
         return redirectedService.redirctedUrl(code);
     }
 }

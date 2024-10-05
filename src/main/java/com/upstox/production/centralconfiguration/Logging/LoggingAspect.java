@@ -14,6 +14,7 @@ public class LoggingAspect {
 	@AfterThrowing(pointcut = "execution(* com.upstox..*(..))",throwing = "exception")
 	public void logFromService(Exception exception)
 	{
+		LOGGER.error(exception.getStackTrace());
 		LOGGER.error(exception.getMessage());
 	}
 }

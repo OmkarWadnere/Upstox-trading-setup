@@ -1,20 +1,18 @@
 package com.upstox;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
-
-import java.io.IOException;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableAsync
+@EnableScheduling
 public class UpstoxTradingSetupApplication {
 
 
-	public static void main(String[] args) throws IOException, UnirestException, InterruptedException {
+	public static void main(String[] args) {
 		SpringApplication.run(UpstoxTradingSetupApplication.class, args);
-		System.out.println("Hello");
 
 	}
 

@@ -10,6 +10,8 @@ import lombok.*;
 @ToString
 public class OrderRequestDto {
 
+    private String optionType;
+    private Integer strikePrice;
     private Double price;
     private Integer quantity;
     private String instrument_name;
