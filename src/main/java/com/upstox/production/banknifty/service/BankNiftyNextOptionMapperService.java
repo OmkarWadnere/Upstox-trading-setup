@@ -21,7 +21,7 @@ public class BankNiftyNextOptionMapperService {
     private BankNiftyOptionMappingRepository bankNiftyOptionMappingRepository;
 
     public String addNextOptionMapping(BankNiftyOptionMapperRequestDto optionMapperRequestDto) throws UpstoxException {
-
+        bankNiftyNextOptionMapperRepository.deleteAll();
         // validate data is already present or not
         validateData(optionMapperRequestDto);
 
@@ -32,16 +32,9 @@ public class BankNiftyNextOptionMapperService {
 
     public void validateData(BankNiftyOptionMapperRequestDto optionMapperRequestDto) throws UpstoxException {
         Optional<BankNiftyNextOptionMapping> optionalNextOptionMappingInstrumentToken = bankNiftyNextOptionMapperRepository.findByInstrumentToken(optionMapperRequestDto.getInstrument_token());
-        if (optionalNextOptionMappingInstrumentToken.isPresent()) {
-            throw new UpstoxException("The provided instrument_token already exists");
-        }
         Optional<BankNiftyNextOptionMapping> optionalNextOptionMappingExpiryDate = bankNiftyNextOptionMapperRepository.findByExpiryDate(optionMapperRequestDto.getExpiry_date());
         if (optionalNextOptionMappingExpiryDate.isPresent()) {
             throw new UpstoxException("The provided Expiry Date already exists");
-        }
-        Optional<BankNiftyOptionMapping> optionalOptionMappingInstrumentToken = bankNiftyOptionMappingRepository.findByInstrumentToken(optionMapperRequestDto.getInstrument_token());
-        if (optionalOptionMappingInstrumentToken.isPresent()) {
-            throw new UpstoxException("The provided instrument_token already exists in option mapper use next expiry for next option mapping");
         }
         Optional<BankNiftyOptionMapping> optionalOptionMappingExpiryDate = bankNiftyOptionMappingRepository.findByExpiryDate(optionMapperRequestDto.getExpiry_date());
         if (optionalOptionMappingExpiryDate.isPresent()) {
