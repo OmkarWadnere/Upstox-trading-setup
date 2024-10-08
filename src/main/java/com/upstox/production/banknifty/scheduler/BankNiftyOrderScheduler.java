@@ -130,8 +130,8 @@ public class BankNiftyOrderScheduler {
                     }
                     OrderData placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
                     if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
-                        cancelAllBuyOrders(bankNiftyOrderMappers, schedulerToken);
-//                        bankNiftyOrderHelper.cancelAllOpenOrders();
+                        // cancelAllBuyOrders(bankNiftyOrderMappers, schedulerToken);
+                       bankNiftyOrderHelper.cancelAllOpenOrders();
                         log.info("Order completed : " + bankNiftyOrderMapper.getOrderId());
                     }
                 }

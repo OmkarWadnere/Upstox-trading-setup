@@ -61,8 +61,8 @@ public class BankNiftyOrderHelper {
                     .parallel()
                     .map(BankNiftyOptionChainDataDTO::getCall_options)
                     .filter(Objects::nonNull)
-                    .filter(callOptions -> callOptions.getMarket_data().getLtp() >= 380.00
-                            && callOptions.getMarket_data().getLtp() <= 450.00)
+                    .filter(callOptions -> callOptions.getMarket_data().getLtp() >= 401.00
+                            && callOptions.getMarket_data().getLtp() <= 470.00)
                     .max((o1, o2) -> Double.compare(o1.getMarket_data().getLtp(), o2.getMarket_data().getLtp()))
                     .orElse(null); // Returns null if no values in range
         } else if (transactionType.equalsIgnoreCase("PUT_BUY")) {
@@ -70,8 +70,8 @@ public class BankNiftyOrderHelper {
                     .parallel()
                     .map(BankNiftyOptionChainDataDTO::getPut_options)
                     .filter(Objects::nonNull)
-                    .filter(putOptions -> putOptions.getMarket_data().getLtp() >= 380.00
-                            && putOptions.getMarket_data().getLtp() <= 450.00)
+                    .filter(putOptions -> putOptions.getMarket_data().getLtp() >= 401.00
+                            && putOptions.getMarket_data().getLtp() <= 470.00)
                     .max((o1, o2) -> Double.compare(o1.getMarket_data().getLtp(), o2.getMarket_data().getLtp()))
                     .orElse(null); // Returns null if no values in range
         }
@@ -277,32 +277,51 @@ public class BankNiftyOrderHelper {
 
     public void cancelAllOpenOrders() throws IOException, InterruptedException {
         //cancel all open orders
-        int counter = 1;
-        AllOrderDetailsDto allOrderDetailsDto = getAllOrderDetails(schedulerToken);
-        for (OrderDetails orderDetails : allOrderDetailsDto.getData()) {
-            if (orderDetails.getOrderStatus().equalsIgnoreCase("open")) {
-                String url = "https://api-hft.upstox.com/v2/order/cancel?order_id=" + orderDetails.getOrderId();
+        String url = "https://api.upstox.com/v2/order/multi/cancel";
 
-                // Replace with your actual values
-                String acceptHeader = "application/json";
+        // Replace with your actual values
+        String acceptHeader = "application/json";
 
-                HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(url))
-                        .header("Accept", acceptHeader)
-                        .header("Authorization", schedulerToken)
-                        .DELETE()
-                        .build();
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept", acceptHeader)
+                .header("Authorization", schedulerToken)
+                .DELETE()
+                .build();
 
-                HttpResponse<String> cancelOrderResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode jsonNodeOrderDetails = objectMapper.readTree(cancelOrderResponse.body());
-                String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
-                if (statusOrderDetails.equalsIgnoreCase("error")) {
-                    log.info("There is some error in placing cancel order : " + orderDetails.getOrderId());
-                }
-            }
-        }
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println("Response Code received from cancel all open orders : " + response.statusCode());
+        System.out.println("Response Body recived from cancel all open orders : " + response.body());
+
+
+        // int counter = 1;
+        // AllOrderDetailsDto allOrderDetailsDto = getAllOrderDetails(schedulerToken);
+        // for (OrderDetails orderDetails : allOrderDetailsDto.getData()) {
+        //     if (orderDetails.getOrderStatus().equalsIgnoreCase("open")) {
+        //         String url = "https://api-hft.upstox.com/v2/order/cancel?order_id=" + orderDetails.getOrderId();
+
+        //         // Replace with your actual values
+        //         String acceptHeader = "application/json";
+
+        //         HttpClient client = HttpClient.newHttpClient();
+        //         HttpRequest request = HttpRequest.newBuilder()
+        //                 .uri(URI.create(url))
+        //                 .header("Accept", acceptHeader)
+        //                 .header("Authorization", schedulerToken)
+        //                 .DELETE()
+        //                 .build();
+
+        //         HttpResponse<String> cancelOrderResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+        //         ObjectMapper objectMapper = new ObjectMapper();
+        //         JsonNode jsonNodeOrderDetails = objectMapper.readTree(cancelOrderResponse.body());
+        //         String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
+        //         if (statusOrderDetails.equalsIgnoreCase("error")) {
+        //             log.info("There is some error in placing cancel order : " + orderDetails.getOrderId());
+        //         }
+        //     }
+        // }
         bankNiftyOrderMapperRepository.deleteAll();
     }
 
