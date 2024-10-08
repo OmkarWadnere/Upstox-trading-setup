@@ -89,7 +89,7 @@ public class BankNiftyOrderScheduler {
                     .symbolName(bankNiftyNextOptionMapping.getSymbolName()).build();
         }
         for (BankNiftyOptionMapping bankNiftyOption: bankNiftyOptionMappings) {
-            if (LocalDate.now().plusDays(1).equals(bankNiftyOption.getExpiryDate().plusDays(1)) && bankNiftyOptionMapping != null) {
+            if (LocalDate.now().equals(bankNiftyOption.getExpiryDate().plusDays(1)) && bankNiftyOptionMapping != null) {
                 bankNiftyOptionMappingRepository.deleteAll();
                 bankNiftyNextOptionMapperRepository.deleteAll();
                 bankNiftyOptionMappingRepository.save(bankNiftyOptionMapping);
