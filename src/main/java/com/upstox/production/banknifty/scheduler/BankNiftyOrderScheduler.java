@@ -27,6 +27,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,6 +100,7 @@ public class BankNiftyOrderScheduler {
 
     @Scheduled(cron = "*/5 * 9-15 * * MON-FRI")
     public void recurrenceOrderExecutionAndChecks() throws UpstoxException, IOException, InterruptedException, UnirestException {
+        log.info("Trade switch : " + tradeSwitch + "at time " + LocalDateTime.now());
         if (tradeSwitch) {
             LocalTime now = LocalTime.now();
             List<OrderData> completedOrderList = new ArrayList<>();
@@ -106,11 +108,13 @@ public class BankNiftyOrderScheduler {
             if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(15, 25)) && !isBankNiftyMainExecutionRunning) {
                 Iterable<BankNiftyOrderMapper> bankNiftyOrderMapperIterable = bankNiftyOrderMapperRepository.findAll();
                 List<BankNiftyOrderMapper> bankNiftyOrderMappers = convertIterableToListOrderMapper(bankNiftyOrderMapperIterable);
+                log.info("All schedular orders : " + bankNiftyOrderMappers);
 //            AllOrderDetailsDto allOrderDetailsDto = bankNiftyOrderHelper.getAllOrderDetails(schedulerToken);
                 List<BankNiftyOrderMapper> bankNiftyOrderMapperList = bankNiftyOrderMappers.stream()
                         .parallel()
                         .filter(bankNiftyOrderMapper1 -> bankNiftyOrderMapper1.getOrderType().equalsIgnoreCase("SELL"))
                         .toList();
+                log.info("All schedular orders SELL: " + bankNiftyOrderMapperList);
                 for (BankNiftyOrderMapper bankNiftyOrderMapper : bankNiftyOrderMapperList) {
                     String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + bankNiftyOrderMapper.getOrderId();
                     HttpRequest request = HttpRequest.newBuilder()
@@ -129,14 +133,16 @@ public class BankNiftyOrderScheduler {
                         continue;
                     }
                     OrderData placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
+                    log.info("schedular orders SELL Response: " + placedMarketOrderResponse);
                     if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
-                        // cancelAllBuyOrders(bankNiftyOrderMappers, schedulerToken);
-                       bankNiftyOrderHelper.cancelAllOpenOrders();
+                         cancelAllBuyOrders(bankNiftyOrderMappers, schedulerToken);
+//                       bankNiftyOrderHelper.cancelAllOpenOrders();
                         log.info("Order completed : " + bankNiftyOrderMapper.getOrderId());
                     }
                 }
                 bankNiftyOrderMapperIterable = bankNiftyOrderMapperRepository.findAll();
                 bankNiftyOrderMappers = convertIterableToListOrderMapper(bankNiftyOrderMapperIterable);
+                log.info("All schedular orders New: " + bankNiftyOrderMappers);
                 for (BankNiftyOrderMapper bankNiftyOrderMapper : bankNiftyOrderMappers) {
                     if (bankNiftyOrderMapper.getOrderType().equalsIgnoreCase("BUY")) {
                         String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + bankNiftyOrderMapper.getOrderId();
@@ -156,8 +162,10 @@ public class BankNiftyOrderScheduler {
                             continue;
                         }
                         OrderData averageOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
+                        log.info("Average schedular order: " + averageOrderResponse);
                         if (averageOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
                             completedOrderList.add(averageOrderResponse);
+                            log.info("Complete order list : " + completedOrderList);
                         }
                     }
                 }
@@ -169,7 +177,7 @@ public class BankNiftyOrderScheduler {
     }
 
     private void cancelAllBuyOrders(List<BankNiftyOrderMapper> bankNiftyOrderMappers, String token) throws UnirestException, IOException, InterruptedException {
-
+        log.info("Cancel all orders details : " + bankNiftyOrderMappers);
         for (BankNiftyOrderMapper bankNiftyOrderMapper : bankNiftyOrderMappers) {
             if (bankNiftyOrderMapper.getOrderType().equalsIgnoreCase("BUY")) {
                 String url = "https://api-hft.upstox.com/v2/order/cancel?order_id=" + bankNiftyOrderMapper.getOrderId();
@@ -193,6 +201,7 @@ public class BankNiftyOrderScheduler {
                 } else {
                     bankNiftyOrderMapperRepository.deleteById(bankNiftyOrderMapper.getId());
                 }
+                log.info("Cancel all orders detail response: " + jsonNodeOrderDetails.asText());
             }
         }
         bankNiftyOrderMapperRepository.deleteAll();
@@ -204,8 +213,11 @@ public class BankNiftyOrderScheduler {
         for (OrderData orderData : completedOrderList) {
             total += orderData.getData().getAveragePrice();
         }
+        log.info("Total price : " + total);
+        log.info("Count : " + count);
         Iterable<BankNiftyOptionMapping> bankNiftyOptionMappingIterable = bankNiftyOptionMappingRepository.findAll();
         BankNiftyOptionMapping bankNiftyOptionMapping = convertIterableToListOptionMapping(bankNiftyOptionMappingIterable).stream().findFirst().orElse(null);
+        log.info("Place Modify Data : " + bankNiftyOptionMapping);
         if (count != 0 && total != 0.00 && bankNiftyOptionMapping != null) {
             for (BankNiftyOrderMapper bankNiftyOrderMapper : bankNiftyOrderMapperList) {
                 if (bankNiftyOrderMapper.getOrderType().equalsIgnoreCase("SELL")) {
@@ -226,6 +238,7 @@ public class BankNiftyOrderScheduler {
                             .header("Content-Type", "application/json")
                             .body(requestBody.toString())  // Pass the JSON payload as string
                             .asString();
+                    log.info("Recieved Modify Order Response : " + response.getBody());
                 }
             }
         }

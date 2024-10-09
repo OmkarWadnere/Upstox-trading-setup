@@ -110,7 +110,9 @@ public class BankNiftyOrderHelper {
         if (statusOrderDetails.equalsIgnoreCase("error")) {
             return;
         }
+
         OrderData orderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
+        log.info("Order placed data : " + orderData);
         bankNiftyOrderMapperRepository.save(BankNiftyOrderMapper.builder().orderId(orderData.getData().getOrderId()).orderType("BUY").build());
 
         // get average price of market order
@@ -124,7 +126,7 @@ public class BankNiftyOrderHelper {
         HttpResponse<String> orderDetailsResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         OrderData placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
         double averagePrice = 0.00;
-
+        log.info("Buy order details : " + placedMarketOrderResponse);
         // place initial target order
         if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
             averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
@@ -198,6 +200,7 @@ public class BankNiftyOrderHelper {
                         .build();
                 placeOptionBuyOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 OrderData targetorderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
+                log.info("Target order details : " + targetorderData);
                 bankNiftyOrderMapperRepository.save(BankNiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
             }
         }
@@ -233,6 +236,7 @@ public class BankNiftyOrderHelper {
                 continue;
             }
             OrderData intervalOrderData = objectMapper.readValue(intervalOrderResponse.body(), OrderData.class);
+            log.info("Target order details : " + intervalOrderData);
             bankNiftyOrderMapperRepository.save(BankNiftyOrderMapper.builder().orderId(intervalOrderData.getData().getOrderId()).orderType("BUY").build());
         }
     }
@@ -272,56 +276,60 @@ public class BankNiftyOrderHelper {
             log.info("There is some error in fetching all orders details");
             return null;
         }
+        log.info("Get all order details: " + orderDetailsResponse.body());
         return objectMapper.readValue(orderDetailsResponse.body(), AllOrderDetailsDto.class);
     }
 
     public void cancelAllOpenOrders() throws IOException, InterruptedException {
         //cancel all open orders
-        String url = "https://api.upstox.com/v2/order/multi/cancel";
+//        String url = "https://api.upstox.com/v2/order/multi/cancel";
+//
+//        // Replace with your actual values
+//        String acceptHeader = "application/json";
+//
+//        HttpClient client = HttpClient.newHttpClient();
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(URI.create(url))
+//                .header("Accept", acceptHeader)
+//                .header("Authorization", schedulerToken)
+//                .DELETE()
+//                .build();
+//
+//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//
+//        System.out.println("Response Code received from cancel all open orders : " + response.statusCode());
+//        System.out.println("Response Body recived from cancel all open orders : " + response.body());
+//
 
-        // Replace with your actual values
-        String acceptHeader = "application/json";
+         int counter = 1;
+         AllOrderDetailsDto allOrderDetailsDto = getAllOrderDetails(schedulerToken);
+         log.info("All orders details: " + allOrderDetailsDto);
+         for (OrderDetails orderDetails : allOrderDetailsDto.getData()) {
+             if (orderDetails.getOrderStatus().equalsIgnoreCase("open")) {
+                 String url = "https://api-hft.upstox.com/v2/order/cancel?order_id=" + orderDetails.getOrderId();
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Accept", acceptHeader)
-                .header("Authorization", schedulerToken)
-                .DELETE()
-                .build();
+                 // Replace with your actual values
+                 String acceptHeader = "application/json";
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                 HttpClient client = HttpClient.newHttpClient();
+                 HttpRequest request = HttpRequest.newBuilder()
+                         .uri(URI.create(url))
+                         .header("Accept", acceptHeader)
+                         .header("Authorization", schedulerToken)
+                         .DELETE()
+                         .build();
 
-        System.out.println("Response Code received from cancel all open orders : " + response.statusCode());
-        System.out.println("Response Body recived from cancel all open orders : " + response.body());
-
-
-        // int counter = 1;
-        // AllOrderDetailsDto allOrderDetailsDto = getAllOrderDetails(schedulerToken);
-        // for (OrderDetails orderDetails : allOrderDetailsDto.getData()) {
-        //     if (orderDetails.getOrderStatus().equalsIgnoreCase("open")) {
-        //         String url = "https://api-hft.upstox.com/v2/order/cancel?order_id=" + orderDetails.getOrderId();
-
-        //         // Replace with your actual values
-        //         String acceptHeader = "application/json";
-
-        //         HttpClient client = HttpClient.newHttpClient();
-        //         HttpRequest request = HttpRequest.newBuilder()
-        //                 .uri(URI.create(url))
-        //                 .header("Accept", acceptHeader)
-        //                 .header("Authorization", schedulerToken)
-        //                 .DELETE()
-        //                 .build();
-
-        //         HttpResponse<String> cancelOrderResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-        //         ObjectMapper objectMapper = new ObjectMapper();
-        //         JsonNode jsonNodeOrderDetails = objectMapper.readTree(cancelOrderResponse.body());
-        //         String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
-        //         if (statusOrderDetails.equalsIgnoreCase("error")) {
-        //             log.info("There is some error in placing cancel order : " + orderDetails.getOrderId());
-        //         }
-        //     }
-        // }
+                 HttpResponse<String> cancelOrderResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                 ObjectMapper objectMapper = new ObjectMapper();
+                 JsonNode jsonNodeOrderDetails = objectMapper.readTree(cancelOrderResponse.body());
+                 String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
+                 if (statusOrderDetails.equalsIgnoreCase("error")) {
+                     log.info("There is some error in placing cancel order : " + orderDetails.getOrderId());
+                 } else {
+                     log.info("Received order data : " + jsonNodeOrderDetails.asText());
+                 }
+             }
+         }
         bankNiftyOrderMapperRepository.deleteAll();
     }
 

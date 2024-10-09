@@ -71,15 +71,19 @@ public class BankNiftyOrderService {
         OrderRequestDto orderRequestDto = processBuyOrderRequestData(requestData);
         // fetch cmp of bank nifty
         BankNiftyLtpResponseDTO bankNiftyLtpResponseDTO = bankNiftyOrderHelper.fetchCmp(BankNiftyUtility.schedulerToken);
+        log.info("Bank nifty CMP: " + bankNiftyLtpResponseDTO);
         double ltp = bankNiftyLtpResponseDTO.getData().get("NSE_INDEX:Nifty Bank").getLast_price();
         //get list of eligible call and put options
         List<Integer> callStrikes = bankNiftyOrderHelper.getCallStrikes(ltp);
         List<Integer> putStrikes = bankNiftyOrderHelper.getPutStrikes(ltp);
+        log.info("Supported Call: " + callStrikes);
+        log.info("Supported Put: " + putStrikes);
         Optional<BankNiftyOptionMapping> optionalBankNiftyFutureMapping = bankNiftyOptionMappingRepository.findByInstrumentToken(orderRequestDto.getInstrument_name());
         if (optionalBankNiftyFutureMapping.isEmpty()) {
             isBankNiftyMainExecutionRunning = false;
             throw new UpstoxException("There is no future mapping for : " + orderRequestDto.getInstrument_name());
         }
+        log.info("Option Mapping details : " + optionalBankNiftyFutureMapping);
         BankNiftyOptionDTO bankNiftyOptionDTO = null;
         if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !BankNiftyUtility.bankNiftyCallOptionFlag) {
@@ -88,11 +92,13 @@ public class BankNiftyOrderService {
                 bankNiftyOrderHelper.cancelAllOpenOrders();
                 bankNiftyOrderHelper.squareOffAllPositions();
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
+                log.info("Option chain details : " + bankNiftyOptionChainResponseDTO);
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "CALL_BUY");
                 if (bankNiftyOptionDTO == null) {
                     isBankNiftyMainExecutionRunning = false;
                     throw new UpstoxException("There is no option in our range");
                 }
+                log.info("Selected strike : " + bankNiftyOptionDTO);
                 bankNiftyOrderHelper.placeBuyOrder(bankNiftyOptionDTO, optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !BankNiftyUtility.bankNiftyPutOptionFlag){
                 BankNiftyUtility.bankNiftyCallOptionFlag = false;
@@ -101,11 +107,12 @@ public class BankNiftyOrderService {
                 bankNiftyOrderHelper.squareOffAllPositions();
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "PUT_BUY");
-
+                log.info("Option chain details : " + bankNiftyOptionChainResponseDTO);
                 if (bankNiftyOptionDTO == null) {
                     isBankNiftyMainExecutionRunning = false;
                     throw new UpstoxException("There is no option in our range");
                 }
+                log.info("Selected strike : " + bankNiftyOptionDTO);
                 bankNiftyOrderHelper.placeBuyOrder(bankNiftyOptionDTO, optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
             }
         } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
@@ -117,11 +124,12 @@ public class BankNiftyOrderService {
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
 
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "PUT_BUY");
-
+                log.info("Option chain details : " + bankNiftyOptionChainResponseDTO);
                 if (bankNiftyOptionDTO == null) {
                     isBankNiftyMainExecutionRunning = false;
                     throw new UpstoxException("There is no option in our range");
                 }
+                log.info("Selected strike : " + bankNiftyOptionDTO);
                 bankNiftyOrderHelper.placeBuyOrder(bankNiftyOptionDTO, optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
 
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !BankNiftyUtility.bankNiftyCallOptionFlag) {
@@ -131,10 +139,12 @@ public class BankNiftyOrderService {
                 bankNiftyOrderHelper.squareOffAllPositions();
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "CALL_BUY");
+                log.info("Option chain details : " + bankNiftyOptionChainResponseDTO);
                 if (bankNiftyOptionDTO == null) {
                     isBankNiftyMainExecutionRunning = false;
                     throw new UpstoxException("There is no option in our range");
                 }
+                log.info("Selected strike : " + bankNiftyOptionDTO);
                 bankNiftyOrderHelper.placeBuyOrder(bankNiftyOptionDTO, optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
             }
         }
