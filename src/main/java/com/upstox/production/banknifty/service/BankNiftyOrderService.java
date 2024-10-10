@@ -83,8 +83,14 @@ public class BankNiftyOrderService {
             isBankNiftyMainExecutionRunning = false;
             throw new UpstoxException("There is no future mapping for : " + orderRequestDto.getInstrument_name());
         }
+        if (schedulerToken.isEmpty() || schedulerToken.length() == 0) {
+            schedulerToken = "Bearer " + upstoxLoginRepository.findByEmail(environment.getProperty("email_id")).get();
+        }
         log.info("Option Mapping details : " + optionalBankNiftyFutureMapping);
         BankNiftyOptionDTO bankNiftyOptionDTO = null;
+        log.info("order request data : " + orderRequestDto);
+        log.info("Strike price : " + orderRequestDto.getStrikePrice());
+        log.info("Bank Nifty call flag : " + BankNiftyUtility.bankNiftyCallOptionFlag + " Put flag : " + BankNiftyUtility.bankNiftyPutOptionFlag);
         if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !BankNiftyUtility.bankNiftyCallOptionFlag) {
                 BankNiftyUtility.bankNiftyCallOptionFlag = true;
