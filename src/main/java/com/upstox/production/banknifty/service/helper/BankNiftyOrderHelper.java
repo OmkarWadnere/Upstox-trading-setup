@@ -42,9 +42,11 @@ public class BankNiftyOrderHelper {
     private BankNiftyOrderMapperRepository bankNiftyOrderMapperRepository;
 
     public BankNiftyOptionChainResponseDTO getOptionChain(BankNiftyOptionMapping bankNiftyOptionMapping, String token) throws UpstoxException, URISyntaxException, IOException, InterruptedException {
+        log.info("Get option chain details: " +bankNiftyOptionMapping);
         HttpClient httpClient = HttpClient.newBuilder().build();
         String bankNifty = "NSE_INDEX%7CNifty%20Bank";
         String expiryDate = bankNiftyOptionMapping.getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        log.info("Bank Nifty and expiry date: " + bankNifty + " " + expiryDate);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("https://api.upstox.com/v2/option/chain?instrument_key=" + bankNifty + "&expiry_date=" + expiryDate))
                 .header("Accept", "application/json")
@@ -52,6 +54,7 @@ public class BankNiftyOrderHelper {
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         ObjectMapper objectMapper = new ObjectMapper();
+        log.info("Option chain : " + response.body());
         return objectMapper.readValue(response.body(), BankNiftyOptionChainResponseDTO.class);
     }
 

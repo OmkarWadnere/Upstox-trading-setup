@@ -93,10 +93,13 @@ public class BankNiftyOrderService {
         log.info("Bank Nifty call flag : " + BankNiftyUtility.bankNiftyCallOptionFlag + " Put flag : " + BankNiftyUtility.bankNiftyPutOptionFlag);
         if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !BankNiftyUtility.bankNiftyCallOptionFlag) {
+                log.info("Here1");
                 BankNiftyUtility.bankNiftyCallOptionFlag = true;
                 BankNiftyUtility.bankNiftyPutOptionFlag = false;
                 bankNiftyOrderHelper.cancelAllOpenOrders();
+                log.info("Here2");
                 bankNiftyOrderHelper.squareOffAllPositions();
+                log.info("Here3");
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
                 log.info("Option chain details : " + bankNiftyOptionChainResponseDTO);
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "CALL_BUY");
@@ -107,10 +110,13 @@ public class BankNiftyOrderService {
                 log.info("Selected strike : " + bankNiftyOptionDTO);
                 bankNiftyOrderHelper.placeBuyOrder(bankNiftyOptionDTO, optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !BankNiftyUtility.bankNiftyPutOptionFlag){
+                log.info("Here1");
                 BankNiftyUtility.bankNiftyCallOptionFlag = false;
                 BankNiftyUtility.bankNiftyPutOptionFlag = true;
                 bankNiftyOrderHelper.cancelAllOpenOrders();
+                log.info("Here2");
                 bankNiftyOrderHelper.squareOffAllPositions();
+                log.info("Here3");
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "PUT_BUY");
                 log.info("Option chain details : " + bankNiftyOptionChainResponseDTO);
@@ -123,10 +129,13 @@ public class BankNiftyOrderService {
             }
         } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !BankNiftyUtility.bankNiftyPutOptionFlag) {
+                log.info("Here1");
                 BankNiftyUtility.bankNiftyCallOptionFlag = false;
                 BankNiftyUtility.bankNiftyPutOptionFlag = true;
                 bankNiftyOrderHelper.cancelAllOpenOrders();
+                log.info("Here2");
                 bankNiftyOrderHelper.squareOffAllPositions();
+                log.info("Here3");
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
 
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "PUT_BUY");
@@ -139,10 +148,13 @@ public class BankNiftyOrderService {
                 bankNiftyOrderHelper.placeBuyOrder(bankNiftyOptionDTO, optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
 
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !BankNiftyUtility.bankNiftyCallOptionFlag) {
+                log.info("Here1");
                 BankNiftyUtility.bankNiftyCallOptionFlag = true;
                 BankNiftyUtility.bankNiftyPutOptionFlag = false;
                 bankNiftyOrderHelper.cancelAllOpenOrders();
+                log.info("Here2");
                 bankNiftyOrderHelper.squareOffAllPositions();
+                log.info("Here3");
                 BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO = bankNiftyOrderHelper.getOptionChain(optionalBankNiftyFutureMapping.get(), BankNiftyUtility.schedulerToken);
                 bankNiftyOptionDTO = bankNiftyOrderHelper.filterBankNiftyOptionStrike(bankNiftyOptionChainResponseDTO, "CALL_BUY");
                 log.info("Option chain details : " + bankNiftyOptionChainResponseDTO);
