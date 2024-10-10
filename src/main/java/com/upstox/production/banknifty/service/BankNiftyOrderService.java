@@ -84,7 +84,7 @@ public class BankNiftyOrderService {
             throw new UpstoxException("There is no future mapping for : " + orderRequestDto.getInstrument_name());
         }
         if (schedulerToken.isEmpty() || schedulerToken.length() == 0) {
-            schedulerToken = "Bearer " + upstoxLoginRepository.findByEmail(environment.getProperty("email_id")).get();
+            schedulerToken = "Bearer " + upstoxLoginRepository.findByEmail(environment.getProperty("email_id")).get().getAccess_token();
         }
         log.info("Option Mapping details : " + optionalBankNiftyFutureMapping);
         BankNiftyOptionDTO bankNiftyOptionDTO = null;
