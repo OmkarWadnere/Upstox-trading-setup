@@ -1,19 +1,19 @@
-package com.upstox.production.banknifty.service.helper;
+package com.upstox.production.nifty.service.helper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.upstox.production.banknifty.dto.BankNiftyLtpResponseDTO;
-import com.upstox.production.banknifty.dto.BankNiftyOptionChainDataDTO;
-import com.upstox.production.banknifty.dto.BankNiftyOptionChainResponseDTO;
-import com.upstox.production.banknifty.dto.BankNiftyOptionDTO;
-import com.upstox.production.banknifty.entity.BankNiftyOptionMapping;
-import com.upstox.production.banknifty.entity.BankNiftyOrderMapper;
-import com.upstox.production.banknifty.repository.BankNiftyOptionMappingRepository;
-import com.upstox.production.banknifty.repository.BankNiftyOrderMapperRepository;
 import com.upstox.production.centralconfiguration.dto.*;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
+import com.upstox.production.nifty.dto.NiftyLtpResponseDTO;
+import com.upstox.production.nifty.dto.NiftyOptionChainDataDTO;
+import com.upstox.production.nifty.dto.NiftyOptionChainResponseDTO;
+import com.upstox.production.nifty.dto.NiftyOptionDTO;
+import com.upstox.production.nifty.entity.NiftyOptionMapping;
+import com.upstox.production.nifty.entity.NiftyOrderMapper;
+import com.upstox.production.nifty.repository.NiftyOptionMappingRepository;
+import com.upstox.production.nifty.repository.NiftyOrderMapperRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -30,67 +30,107 @@ import java.util.*;
 
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.schedulerToken;
 
+
 @Component
 @Slf4j
-public class BankNiftyOrderHelper {
+public class NiftyOrderHelper {
 
     @Autowired
-    private BankNiftyOptionMappingRepository bankNiftyOptionMappingRepository;
+    private NiftyOptionMappingRepository niftyOptionMappingRepository;
     @Autowired
     private Environment environment;
     @Autowired
-    private BankNiftyOrderMapperRepository bankNiftyOrderMapperRepository;
+    private NiftyOrderMapperRepository niftyOrderMapperRepository;
 
-    public BankNiftyOptionChainResponseDTO getOptionChain(BankNiftyOptionMapping bankNiftyOptionMapping, String token) throws UpstoxException, URISyntaxException, IOException, InterruptedException {
-        log.info("Get option chain details: " +bankNiftyOptionMapping);
+    public NiftyOptionChainResponseDTO getOptionChain(NiftyOptionMapping niftyOptionMapping, String token) throws UpstoxException, URISyntaxException, IOException, InterruptedException {
+        log.info("Get option chain details: " +niftyOptionMapping);
         HttpClient httpClient = HttpClient.newBuilder().build();
-        String bankNifty = "NSE_INDEX%7CNifty%20Bank";
-        String expiryDate = bankNiftyOptionMapping.getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        log.info("Bank Nifty and expiry date: " + bankNifty + " " + expiryDate);
+        String nifty = "NSE_INDEX%7CNifty%2050";
+        String expiryDate = niftyOptionMapping.getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        log.info(" Nifty and expiry date: " + nifty + " " + expiryDate);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("https://api.upstox.com/v2/option/chain?instrument_key=" + bankNifty + "&expiry_date=" + expiryDate))
+                .uri(new URI("https://api.upstox.com/v2/option/chain?instrument_key=" + nifty + "&expiry_date=" + expiryDate))
                 .header("Accept", "application/json")
                 .header("Authorization", token)
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         ObjectMapper objectMapper = new ObjectMapper();
         log.info("Option chain : " + response.body());
-        return objectMapper.readValue(response.body(), BankNiftyOptionChainResponseDTO.class);
+        return objectMapper.readValue(response.body(), NiftyOptionChainResponseDTO.class);
     }
 
-    public BankNiftyOptionDTO filterBankNiftyOptionStrike(BankNiftyOptionChainResponseDTO bankNiftyOptionChainResponseDTO, String transactionType) {
+    public NiftyOptionDTO filterNiftyOptionStrike(NiftyOptionChainResponseDTO niftyOptionChainResponseDTO, String transactionType) {
+        // Check for Call Buy options
         if (transactionType.equalsIgnoreCase("CALL_BUY")) {
-            return bankNiftyOptionChainResponseDTO.getData().stream()
+            // First try to get call options with multiples of 100
+            Optional<NiftyOptionDTO> callOption = niftyOptionChainResponseDTO.getData().stream()
                     .parallel()
-                    .map(BankNiftyOptionChainDataDTO::getCall_options)
-                    .filter(Objects::nonNull)
-                    .filter(callOptions -> callOptions.getMarket_data().getLtp() >= 401.00
-                            && callOptions.getMarket_data().getLtp() <= 470.00)
-                    .max((o1, o2) -> Double.compare(o1.getMarket_data().getLtp(), o2.getMarket_data().getLtp()))
-                    .orElse(null); // Returns null if no values in range
+                    .filter(data -> data.getCall_options() != null) // Ensure call options are not null
+                    .filter(data -> {
+                        NiftyOptionDTO callOptions = data.getCall_options();
+                        double ltp = callOptions.getMarket_data().getLtp();
+                        return ltp >= 401.00 && ltp <= 470.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
+                    })
+                    .map(NiftyOptionChainDataDTO::getCall_options)
+                    .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
+
+            // If no multiples of 100 found, fall back to multiples of 50
+            if (callOption.isEmpty()) {
+                callOption = niftyOptionChainResponseDTO.getData().stream()
+                        .parallel()
+                        .filter(data -> data.getCall_options() != null) // Ensure call options are not null
+                        .filter(data -> {
+                            NiftyOptionDTO callOptions = data.getCall_options();
+                            double ltp = callOptions.getMarket_data().getLtp();
+                            return ltp >= 401.00 && ltp <= 470.00 && data.getStrike_price() % 50 == 0; // Check LTP and strike price
+                        })
+                        .map(NiftyOptionChainDataDTO::getCall_options)
+                        .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
+            }
+            return callOption.orElse(null); // Return the found call option or null
+
+            // Check for Put Buy options
         } else if (transactionType.equalsIgnoreCase("PUT_BUY")) {
-            return bankNiftyOptionChainResponseDTO.getData().stream()
+            // First try to get put options with multiples of 100
+            Optional<NiftyOptionDTO> putOption = niftyOptionChainResponseDTO.getData().stream()
                     .parallel()
-                    .map(BankNiftyOptionChainDataDTO::getPut_options)
-                    .filter(Objects::nonNull)
-                    .filter(putOptions -> putOptions.getMarket_data().getLtp() >= 401.00
-                            && putOptions.getMarket_data().getLtp() <= 470.00)
-                    .max((o1, o2) -> Double.compare(o1.getMarket_data().getLtp(), o2.getMarket_data().getLtp()))
-                    .orElse(null); // Returns null if no values in range
+                    .filter(data -> data.getPut_options() != null) // Ensure put options are not null
+                    .filter(data -> {
+                        NiftyOptionDTO putOptions = data.getPut_options();
+                        double ltp = putOptions.getMarket_data().getLtp();
+                        return ltp >= 401.00 && ltp <= 470.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
+                    })
+                    .map(NiftyOptionChainDataDTO::getPut_options)
+                    .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
+
+            // If no multiples of 100 found, fall back to multiples of 50
+            if (putOption.isEmpty()) {
+                putOption = niftyOptionChainResponseDTO.getData().stream()
+                        .parallel()
+                        .filter(data -> data.getPut_options() != null) // Ensure put options are not null
+                        .filter(data -> {
+                            NiftyOptionDTO putOptions = data.getPut_options();
+                            double ltp = putOptions.getMarket_data().getLtp();
+                            return ltp >= 401.00 && ltp <= 470.00 && data.getStrike_price() % 50 == 0; // Check LTP and strike price
+                        })
+                        .map(NiftyOptionChainDataDTO::getPut_options)
+                        .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
+            }
+            return putOption.orElse(null); // Return the found put option or null
         }
-        return null;
+        return null; // Return null if transaction type does not match
     }
 
-    public void placeBuyOrder(BankNiftyOptionDTO bankNiftyOptionDTO, BankNiftyOptionMapping bankNiftyOptionMapping, String token) throws IOException, InterruptedException, UnirestException {
+    public void placeBuyOrder(NiftyOptionDTO niftyOptionDTO, NiftyOptionMapping niftyOptionMapping, String token) throws IOException, InterruptedException, UnirestException {
         ObjectMapper objectMapper = new ObjectMapper();
         // place 1st market order
         String requestBody = "{"
-                + "\"quantity\": " + bankNiftyOptionMapping.getQuantity() * bankNiftyOptionMapping.getNumberOfLots() + ","
+                + "\"quantity\": " + niftyOptionMapping.getQuantity() * niftyOptionMapping.getNumberOfLots() + ","
                 + "\"product\": \"D\","
                 + "\"validity\": \"DAY\","
                 + "\"price\": 0,"
                 + "\"tag\": \"string\","
-                + "\"instrument_token\": \"" + bankNiftyOptionDTO.getInstrument_key() + "\","
+                + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
                 + "\"order_type\": \"MARKET\","
                 + "\"transaction_type\": \"BUY\","
                 + "\"disclosed_quantity\": 0,"
@@ -116,7 +156,7 @@ public class BankNiftyOrderHelper {
 
         OrderData orderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
         log.info("Order placed data : " + orderData);
-        bankNiftyOrderMapperRepository.save(BankNiftyOrderMapper.builder().orderId(orderData.getData().getOrderId()).orderType("BUY").build());
+        niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(orderData.getData().getOrderId()).orderType("BUY").build());
 
         // get average price of market order
         String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + orderData.getData().getOrderId();
@@ -137,9 +177,9 @@ public class BankNiftyOrderHelper {
                     + "\"quantity\": " + placedMarketOrderResponse.getData().getQuantity() + ","
                     + "\"product\": \"D\","
                     + "\"validity\": \"DAY\","
-                    + "\"price\": " + (averagePrice + bankNiftyOptionMapping.getProfitPoints()) + ","
+                    + "\"price\": " + (averagePrice + niftyOptionMapping.getProfitPoints()) + ","
                     + "\"tag\": \"string\","
-                    + "\"instrument_token\": \"" + bankNiftyOptionDTO.getInstrument_key() + "\","
+                    + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
                     + "\"order_type\": \"LIMIT\","
                     + "\"transaction_type\": \"SELL\","
                     + "\"disclosed_quantity\": 0,"
@@ -163,7 +203,7 @@ public class BankNiftyOrderHelper {
                 return;
             }
             OrderData targetorderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
-            bankNiftyOrderMapperRepository.save(BankNiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
+            niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
         } else {
             Thread.sleep(1200);
             // get average price of market order
@@ -182,9 +222,9 @@ public class BankNiftyOrderHelper {
                         + "\"quantity\": " + placedMarketOrderResponse.getData().getQuantity() + ","
                         + "\"product\": \"D\","
                         + "\"validity\": \"DAY\","
-                        + "\"price\": " + (averagePrice + bankNiftyOptionMapping.getProfitPoints()) + ","
+                        + "\"price\": " + (averagePrice + niftyOptionMapping.getProfitPoints()) + ","
                         + "\"tag\": \"string\","
-                        + "\"instrument_token\": \"" + bankNiftyOptionDTO.getInstrument_key() + "\","
+                        + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
                         + "\"order_type\": \"LIMIT\","
                         + "\"transaction_type\": \"SELL\","
                         + "\"disclosed_quantity\": 0,"
@@ -204,20 +244,20 @@ public class BankNiftyOrderHelper {
                 placeOptionBuyOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 OrderData targetorderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
                 log.info("Target order details : " + targetorderData);
-                bankNiftyOrderMapperRepository.save(BankNiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
+                niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
             }
         }
 
         // place average price order
-        for (int i = 1; i <= bankNiftyOptionMapping.getAveragingTimes(); i++) {
-            averagePrice -= bankNiftyOptionMapping.getAveragingPointInterval();
+        for (int i = 1; i <= niftyOptionMapping.getAveragingTimes(); i++) {
+            averagePrice -= niftyOptionMapping.getAveragingPointInterval();
             requestBody = "{"
-                    + "\"quantity\": " + bankNiftyOptionMapping.getQuantity() * bankNiftyOptionMapping.getNumberOfLots() + ","
+                    + "\"quantity\": " + niftyOptionMapping.getQuantity() * niftyOptionMapping.getNumberOfLots() + ","
                     + "\"product\": \"D\","
                     + "\"validity\": \"DAY\","
                     + "\"price\": "+ averagePrice + ","
                     + "\"tag\": \"string\","
-                    + "\"instrument_token\": \"" + bankNiftyOptionDTO.getInstrument_key() + "\","
+                    + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
                     + "\"order_type\": \"LIMIT\","
                     + "\"transaction_type\": \"BUY\","
                     + "\"disclosed_quantity\": 0,"
@@ -240,13 +280,13 @@ public class BankNiftyOrderHelper {
             }
             OrderData intervalOrderData = objectMapper.readValue(intervalOrderResponse.body(), OrderData.class);
             log.info("Target order details : " + intervalOrderData);
-            bankNiftyOrderMapperRepository.save(BankNiftyOrderMapper.builder().orderId(intervalOrderData.getData().getOrderId()).orderType("BUY").build());
+            niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(intervalOrderData.getData().getOrderId()).orderType("BUY").build());
         }
     }
 
-    public BankNiftyLtpResponseDTO fetchCmp(String token) throws IOException, InterruptedException {
-        String bankNifty = "NSE_INDEX%7CNifty%20Bank";
-        String url = "https://api.upstox.com/v2/market-quote/ltp?instrument_key=" + bankNifty;
+    public NiftyLtpResponseDTO fetchCmp(String token) throws IOException, InterruptedException {
+        String nifty = "NSE_INDEX%7CNifty%2050";
+        String url = "https://api.upstox.com/v2/market-quote/ltp?instrument_key=" + nifty;
         String acceptHeader = "application/json";
         String authorizationHeader = token;
 
@@ -259,7 +299,7 @@ public class BankNiftyOrderHelper {
 
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(response.body(), BankNiftyLtpResponseDTO.class);
+        return objectMapper.readValue(response.body(), NiftyLtpResponseDTO.class);
     }
 
     public AllOrderDetailsDto getAllOrderDetails(String token) throws IOException, InterruptedException {
@@ -333,7 +373,7 @@ public class BankNiftyOrderHelper {
                  }
              }
          }
-        bankNiftyOrderMapperRepository.deleteAll();
+        niftyOrderMapperRepository.deleteAll();
     }
 
     public void squareOffAllPositions() throws UpstoxException, UnirestException, IOException, InterruptedException {
@@ -386,28 +426,36 @@ public class BankNiftyOrderHelper {
                 log.info("Market order sent for " + transaction_type + "means previous square off : " + orderSentResponse.body());
             }
         }
-        bankNiftyOrderMapperRepository.deleteAll();
+        niftyOrderMapperRepository.deleteAll();
     }
 
     public List<Integer> getCallStrikes(double cmp) {
         List<Integer> callStrikes = new ArrayList<>();
-        // Select call options below CMP
-        for (int strike = (int) (cmp / 100) * 100; strike >= cmp - 300; strike -= 100) {
-            if (strike < cmp) { // Ensure the strike is below CMP
+        // Starting strike from the nearest multiple of 100
+        for (int strike = (int) (cmp / 100) * 100; strike >= cmp - 100; strike -= 100) {
+            if (strike <= cmp) {
                 callStrikes.add(strike);
             }
         }
-        return callStrikes;
+        // Ensure the list contains exactly 2 elements
+        while (callStrikes.size() < 2) {
+            callStrikes.add(callStrikes.get(callStrikes.size() - 1) - 100); // Add lower strikes
+        }
+        return callStrikes.subList(0, 2); // Only return the first 2 elements
     }
 
     public List<Integer> getPutStrikes(double cmp) {
         List<Integer> putStrikes = new ArrayList<>();
-        // Select put options above CMP
-        for (int strike = (int) (cmp / 100) * 100 + 100; strike <= cmp + 300; strike += 100) {
-            if (strike > cmp) { // Ensure the strike is above CMP
+        // Starting strike from the nearest multiple of 100
+        for (int strike = (int) (cmp / 100) * 100; strike <= cmp + 100; strike += 100) {
+            if (strike >= cmp) {
                 putStrikes.add(strike);
             }
         }
-        return putStrikes;
+        // Ensure the list contains exactly 2 elements
+        while (putStrikes.size() < 2) {
+            putStrikes.add(putStrikes.get(putStrikes.size() - 1) + 100); // Add higher strikes
+        }
+        return putStrikes.subList(0, 2); // Only return the first 2 elements
     }
 }

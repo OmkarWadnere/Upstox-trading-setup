@@ -6,4 +6,5 @@ import lombok.experimental.UtilityClass;
 public class CentralUtility {
 
     public static boolean tradeSwitch = true;
+    public static String schedulerToken = "";
 }

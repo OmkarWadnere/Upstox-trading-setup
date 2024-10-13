@@ -8,6 +8,7 @@ import com.upstox.production.banknifty.utility.BankNiftyUtility;
 import com.upstox.production.centralconfiguration.dto.UpstoxLoginDto;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
+import com.upstox.production.centralconfiguration.utility.CentralUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -46,7 +47,7 @@ public class RedirectedService {
         } else {
             upstoxLogin = buildUpstoxLogin(upstoxLoginDto);
         }
-        BankNiftyUtility.schedulerToken = "Bearer " + upstoxLogin.getAccess_token();
+        CentralUtility.schedulerToken = "Bearer " + upstoxLogin.getAccess_token();
         return upstoxLoginRepository.save(upstoxLogin);
     }
 
