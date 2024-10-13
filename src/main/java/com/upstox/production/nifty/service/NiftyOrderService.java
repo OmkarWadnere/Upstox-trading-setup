@@ -62,11 +62,6 @@ public class NiftyOrderService {
     public void buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException, URISyntaxException {
         isNiftyMainExecutionRunning = true;
         LocalTime now = LocalTime.now();
-        if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
-            niftyMorningTradeCounter++;
-            isNiftyMainExecutionRunning = false;
-            log.info("We are not taking tade because its first trade of the day at time : " + LocalDateTime.now());
-        }
         if (now.isAfter(LocalTime.of(15,24, 30))) {
             isNiftyMainExecutionRunning = false;
             return;
@@ -98,6 +93,14 @@ public class NiftyOrderService {
         log.info("Nifty call flag : " + NiftyUtility.niftyCallOptionFlag + " Put flag : " + NiftyUtility.niftyPutOptionFlag);
         if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyCallOptionFlag) {
+                if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
+                    niftyMorningTradeCounter++;
+                    NiftyUtility.niftyCallOptionFlag = true;
+                    NiftyUtility.niftyPutOptionFlag = false;
+                    isNiftyMainExecutionRunning = false;
+                    log.info("We are not taking trade because its first trade of the day at time : " + LocalDateTime.now());
+                    return;
+                }
                 log.info("Here1");
                 NiftyUtility.niftyCallOptionFlag = true;
                 NiftyUtility.niftyPutOptionFlag = false;
@@ -115,6 +118,14 @@ public class NiftyOrderService {
                 log.info("Selected strike : " + niftyOptionDTO);
                 niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyPutOptionFlag){
+                if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
+                    niftyMorningTradeCounter++;
+                    NiftyUtility.niftyCallOptionFlag = false;
+                    NiftyUtility.niftyPutOptionFlag = true;
+                    isNiftyMainExecutionRunning = false;
+                    log.info("We are not taking trade because its first trade of the day at time : " + LocalDateTime.now());
+                    return;
+                }
                 log.info("Here1");
                 NiftyUtility.niftyCallOptionFlag = false;
                 NiftyUtility.niftyPutOptionFlag = true;
@@ -134,6 +145,14 @@ public class NiftyOrderService {
             }
         } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyPutOptionFlag) {
+                if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
+                    niftyMorningTradeCounter++;
+                    NiftyUtility.niftyCallOptionFlag = false;
+                    NiftyUtility.niftyPutOptionFlag = true;
+                    isNiftyMainExecutionRunning = false;
+                    log.info("We are not taking trade because its first trade of the day at time : " + LocalDateTime.now());
+                    return;
+                }
                 log.info("Here1");
                 NiftyUtility.niftyCallOptionFlag = false;
                 NiftyUtility.niftyPutOptionFlag = true;
@@ -153,6 +172,14 @@ public class NiftyOrderService {
                 niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
 
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyCallOptionFlag) {
+                if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
+                    niftyMorningTradeCounter++;
+                    NiftyUtility.niftyCallOptionFlag = true;
+                    NiftyUtility.niftyPutOptionFlag = false;
+                    isNiftyMainExecutionRunning = false;
+                    log.info("We are not taking trade because its first trade of the day at time : " + LocalDateTime.now());
+                    return;
+                }
                 log.info("Here1");
                 NiftyUtility.niftyCallOptionFlag = true;
                 NiftyUtility.niftyPutOptionFlag = false;

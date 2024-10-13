@@ -170,6 +170,7 @@ public class NiftyOrderHelper {
         OrderData placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
         double averagePrice = 0.00;
         log.info("Buy order details : " + placedMarketOrderResponse);
+
         // place initial target order
         if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
             averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
@@ -216,6 +217,7 @@ public class NiftyOrderHelper {
                     .build();
             orderDetailsResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
+            log.info("After 1200 ms entry order data : " + placedMarketOrderResponse);
             if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
                 averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
                 requestBody = "{"
@@ -288,17 +290,17 @@ public class NiftyOrderHelper {
         String nifty = "NSE_INDEX%7CNifty%2050";
         String url = "https://api.upstox.com/v2/market-quote/ltp?instrument_key=" + nifty;
         String acceptHeader = "application/json";
-        String authorizationHeader = token;
 
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Accept", acceptHeader)
-                .header("Authorization", authorizationHeader)
+                .header("Authorization", token)
                 .build();
 
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         ObjectMapper objectMapper = new ObjectMapper();
+        log.info("Current market price received : " + response.body());
         return objectMapper.readValue(response.body(), NiftyLtpResponseDTO.class);
     }
 
@@ -325,38 +327,36 @@ public class NiftyOrderHelper {
 
     public void cancelAllOpenOrders() throws IOException, InterruptedException {
         //cancel all open orders
-//        String url = "https://api.upstox.com/v2/order/multi/cancel";
-//
-//        // Replace with your actual values
-//        String acceptHeader = "application/json";
-//
-//        HttpClient client = HttpClient.newHttpClient();
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(url))
-//                .header("Accept", acceptHeader)
-//                .header("Authorization", schedulerToken)
-//                .DELETE()
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        System.out.println("Response Code received from cancel all open orders : " + response.statusCode());
-//        System.out.println("Response Body recived from cancel all open orders : " + response.body());
-//
+        String url = "https://api.upstox.com/v2/order/multi/cancel";
+
+        // Replace with your actual values
+        String acceptHeader = "application/json";
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept", acceptHeader)
+                .header("Authorization", schedulerToken)
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        log.info("Response Code received from cancel all open orders : " + response.statusCode());
+        log.info("Response Body received from cancel all open orders : " + response.body());
 
          int counter = 1;
          AllOrderDetailsDto allOrderDetailsDto = getAllOrderDetails(schedulerToken);
          log.info("All orders details: " + allOrderDetailsDto);
          for (OrderDetails orderDetails : allOrderDetailsDto.getData()) {
              if (orderDetails.getOrderStatus().equalsIgnoreCase("open")) {
-                 String url = "https://api-hft.upstox.com/v2/order/cancel?order_id=" + orderDetails.getOrderId();
+                 String urlForCancelSingleOrder = "https://api-hft.upstox.com/v2/order/cancel?order_id=" + orderDetails.getOrderId();
 
                  // Replace with your actual values
-                 String acceptHeader = "application/json";
 
-                 HttpClient client = HttpClient.newHttpClient();
-                 HttpRequest request = HttpRequest.newBuilder()
-                         .uri(URI.create(url))
+                 client = HttpClient.newHttpClient();
+                 request = HttpRequest.newBuilder()
+                         .uri(URI.create(urlForCancelSingleOrder))
                          .header("Accept", acceptHeader)
                          .header("Authorization", schedulerToken)
                          .DELETE()
@@ -378,6 +378,31 @@ public class NiftyOrderHelper {
 
     public void squareOffAllPositions() throws UpstoxException, UnirestException, IOException, InterruptedException {
         // get all positions and square off it
+
+        String url = "https://api.upstox.com/v2/order/positions/exit";
+
+        // empty request body
+        String requestBody = "";
+
+        // Create the HttpClient
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Create the HttpRequest
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .header("Authorization", schedulerToken)
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+
+        // Send the request and retrieve the response
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Print the response status code and body
+        log.info("Response Code from square off all open position api: " + response.statusCode());
+        log.info("Response Body square off all open position api: " + response.body());
+
         log.info("Fetch the current position we are holding");
         Unirest.setTimeouts(0, 0);
         com.mashape.unirest.http.HttpResponse<String> getAllPositionResponse = Unirest.get(environment.getProperty("upstox_url") + environment.getProperty("get_position"))
@@ -397,7 +422,7 @@ public class NiftyOrderHelper {
                 log.info("Exiting from previous trade : " + positionDataDto);
                 String transaction_type = positionDataDto.getQuantity() < 0 ? "BUY" : "SELL";
                 int quantity = positionDataDto.getQuantity() < 0 ? positionDataDto.getQuantity() * -1 : positionDataDto.getQuantity();
-                String requestBody = "{"
+                requestBody = "{"
                         + "\"quantity\": " + quantity + ","
                         + "\"product\": \"D\","
                         + "\"validity\": \"DAY\","
@@ -412,10 +437,10 @@ public class NiftyOrderHelper {
                         + "}";
 
                 // Create the HttpRequest
-                HttpClient httpClient = HttpClient.newHttpClient();
+                httpClient = HttpClient.newHttpClient();
 
                 String orderUrl = environment.getProperty("upstox_url") + "/order/place";
-                HttpRequest request = HttpRequest.newBuilder()
+                request = HttpRequest.newBuilder()
                         .uri(URI.create(orderUrl))
                         .header("Content-Type", "application/json")
                         .header("Accept", "application/json")
