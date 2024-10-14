@@ -99,7 +99,7 @@ public class NiftyOrderScheduler {
         }
     }
 
-    @Scheduled(cron = "*/5 * 9-15 * * MON-FRI")
+//    @Scheduled(cron = "*/5 * 9-15 * * MON-FRI")
     public void recurrenceOrderExecutionAndChecks() throws UpstoxException, IOException, InterruptedException, UnirestException {
         log.info("Trade switch : " + tradeSwitch + "at time " + LocalDateTime.now());
         if (tradeSwitch) {

@@ -176,116 +176,52 @@ public class NiftyOrderHelper {
         // place initial target order
         if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
             averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
-            requestBody = "{"
-                    + "\"quantity\": " + placedMarketOrderResponse.getData().getQuantity() + ","
-                    + "\"product\": \"D\","
-                    + "\"validity\": \"DAY\","
-                    + "\"price\": " + (averagePrice + niftyOptionMapping.getProfitPoints()) + ","
-                    + "\"tag\": \"string\","
-                    + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
-                    + "\"order_type\": \"LIMIT\","
-                    + "\"transaction_type\": \"SELL\","
-                    + "\"disclosed_quantity\": 0,"
-                    + "\"trigger_price\": 0,"
-                    + "\"is_amo\": false"
-                    + "}";
+            log.info("Average price : " + averagePrice + " Target point : " + niftyOptionMapping.getProfitPoints());
+            double targetPrice = averagePrice + niftyOptionMapping.getProfitPoints();
+            log.info("Target Price : " + targetPrice);
+
+
+            String url = "https://api-hft.upstox.com/v2/order/place";
+            // Set up the request body
+            String targetRequestBody = "{"
+                            + "\"quantity\": " + placedMarketOrderResponse.getData().getQuantity() + ","
+                            + "\"product\": \"D\","
+                            + "\"validity\": \"DAY\","
+                            + "\"price\": " + targetPrice + ","
+                            + "\"tag\": \"string\","
+                            + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
+                            + "\"order_type\": \"LIMIT\","
+                            + "\"transaction_type\": \"SELL\","
+                            + "\"disclosed_quantity\": 0,"
+                            + "\"trigger_price\": " + targetPrice + ","
+                            + "\"is_amo\": false"
+                            + "}";
+            log.info("Target Order Request : " + targetRequestBody);
+            // Create the HttpClient
             httpClient = HttpClient.newHttpClient();
 
-            orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
-            request = HttpRequest.newBuilder()
-                    .uri(URI.create(orderUrl))
+            // Create the HttpRequest
+            HttpRequest targetRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .header("Authorization", token)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .POST(HttpRequest.BodyPublishers.ofString(targetRequestBody))
                     .build();
-            placeOptionBuyOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            jsonNodeOrderDetails = objectMapper.readTree(placeOptionBuyOrderResponse.body());
+
+                // Send the request and retrieve the response
+            HttpResponse<String> response = httpClient.send(targetRequest, HttpResponse.BodyHandlers.ofString());
+
+            jsonNodeOrderDetails = objectMapper.readTree(response.body());
             statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
             if (statusOrderDetails.equalsIgnoreCase("error")) {
                 return;
             }
-            OrderData targetorderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
+            OrderData targetorderData = objectMapper.readValue(response.body(), OrderData.class);
+            log.info("Target Order response : " + targetorderData);
             niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
-        } else {
-            Thread.sleep(1200);
-            // get average price of market order
-            orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + orderData.getData().getOrderId();
-            request = HttpRequest.newBuilder()
-                    .uri(URI.create(orderDetailsUrl))
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", token)
-                    .build();
-            orderDetailsResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
-            log.info("After 1200 ms entry order data : " + placedMarketOrderResponse);
-            if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
-                averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
-                requestBody = "{"
-                        + "\"quantity\": " + placedMarketOrderResponse.getData().getQuantity() + ","
-                        + "\"product\": \"D\","
-                        + "\"validity\": \"DAY\","
-                        + "\"price\": " + (averagePrice + niftyOptionMapping.getProfitPoints()) + ","
-                        + "\"tag\": \"string\","
-                        + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
-                        + "\"order_type\": \"LIMIT\","
-                        + "\"transaction_type\": \"SELL\","
-                        + "\"disclosed_quantity\": 0,"
-                        + "\"trigger_price\": 0,"
-                        + "\"is_amo\": false"
-                        + "}";
-                httpClient = HttpClient.newHttpClient();
-
-                orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
-                request = HttpRequest.newBuilder()
-                        .uri(URI.create(orderUrl))
-                        .header("Content-Type", "application/json")
-                        .header("Accept", "application/json")
-                        .header("Authorization", token)
-                        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                        .build();
-                placeOptionBuyOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                OrderData targetorderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
-                log.info("Target order details : " + targetorderData);
-                niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
-            }
         }
 
-        // place average price order
-        for (int i = 1; i <= niftyOptionMapping.getAveragingTimes(); i++) {
-            averagePrice -= niftyOptionMapping.getAveragingPointInterval();
-            requestBody = "{"
-                    + "\"quantity\": " + niftyOptionMapping.getQuantity() * niftyOptionMapping.getNumberOfLots() + ","
-                    + "\"product\": \"D\","
-                    + "\"validity\": \"DAY\","
-                    + "\"price\": "+ averagePrice + ","
-                    + "\"tag\": \"string\","
-                    + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
-                    + "\"order_type\": \"LIMIT\","
-                    + "\"transaction_type\": \"BUY\","
-                    + "\"disclosed_quantity\": 0,"
-                    + "\"trigger_price\": 0,"
-                    + "\"is_amo\": false"
-                    + "}";
-            orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
-            request = HttpRequest.newBuilder()
-                    .uri(URI.create(orderUrl))
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", token)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
-            HttpResponse<String> intervalOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            jsonNodeOrderDetails = objectMapper.readTree(intervalOrderResponse.body());
-            statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
-            if (statusOrderDetails.equalsIgnoreCase("error")) {
-                continue;
-            }
-            OrderData intervalOrderData = objectMapper.readValue(intervalOrderResponse.body(), OrderData.class);
-            log.info("Target order details : " + intervalOrderData);
-            niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(intervalOrderData.getData().getOrderId()).orderType("BUY").build());
-        }
     }
 
     public NiftyLtpResponseDTO fetchCmp(String token) throws IOException, InterruptedException {

@@ -37,5 +37,6 @@ public class NiftyOrderController {
         } else {
             log.info("!!!Someone has closed trading for remaining day!!!");
         }
+        isNiftyMainExecutionRunning = false;
     }
 }

@@ -91,7 +91,8 @@ public class NiftyOrderService {
         log.info("order request data : " + orderRequestDto);
         log.info("Strike price : " + orderRequestDto.getStrikePrice());
         log.info("Nifty call flag : " + NiftyUtility.niftyCallOptionFlag + " Put flag : " + NiftyUtility.niftyPutOptionFlag);
-        if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice()) && !isNiftyMainExecutionRunning) {
+        log.info("Thread details : " + isNiftyMainExecutionRunning);
+        if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyCallOptionFlag) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
@@ -143,7 +144,7 @@ public class NiftyOrderService {
                 log.info("Selected strike : " + niftyOptionDTO);
                 niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
             }
-        } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice()) && !isNiftyMainExecutionRunning) {
+        } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyPutOptionFlag) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
