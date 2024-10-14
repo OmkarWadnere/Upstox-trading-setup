@@ -137,6 +137,7 @@ public class NiftyOrderHelper {
                 + "\"trigger_price\": 0,"
                 + "\"is_amo\": false"
                 + "}";
+        log.info("Request data :  " + requestBody);
         HttpClient httpClient = HttpClient.newHttpClient();
 
         String orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
@@ -149,6 +150,7 @@ public class NiftyOrderHelper {
                 .build();
         HttpResponse<String> placeOptionBuyOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         JsonNode jsonNodeOrderDetails = objectMapper.readTree(placeOptionBuyOrderResponse.body());
+        log.info("Placed order response " + placeOptionBuyOrderResponse.body());
         String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
         if (statusOrderDetails.equalsIgnoreCase("error")) {
             return;

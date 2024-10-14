@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradeSwitch;
+import static com.upstox.production.nifty.utility.NiftyUtility.isNiftyMainExecutionRunning;
 
 @RestController
 @Slf4j
@@ -25,7 +26,14 @@ public class NiftyOrderController {
     public void NiftyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
                                           @RequestBody String niftyPayload) throws UpstoxException, IOException, UnirestException, InterruptedException, URISyntaxException {
         if (tradeSwitch) {
-            niftyOrderService.buyOrderExecution(niftyPayload);
+            if (isNiftyMainExecutionRunning) {
+                Thread.sleep(3000);
+                niftyOrderService.buyOrderExecution(niftyPayload);
+            } else {
+                isNiftyMainExecutionRunning = true;
+                niftyOrderService.buyOrderExecution(niftyPayload);
+            }
+
         } else {
             log.info("!!!Someone has closed trading for remaining day!!!");
         }
