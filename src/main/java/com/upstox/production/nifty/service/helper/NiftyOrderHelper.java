@@ -177,7 +177,7 @@ public class NiftyOrderHelper {
         if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
             averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
             log.info("Average price : " + averagePrice + " Target point : " + niftyOptionMapping.getProfitPoints());
-            double targetPrice = averagePrice + niftyOptionMapping.getProfitPoints();
+            double targetPrice = Math.round((averagePrice + niftyOptionMapping.getProfitPoints()) * 20)/20.00;
             log.info("Target Price : " + targetPrice);
 
 
