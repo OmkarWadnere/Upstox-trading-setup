@@ -32,9 +32,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.upstox.production.centralconfiguration.utility.CentralUtility.schedulerToken;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.*;
 import static com.upstox.production.nifty.utility.NiftyUtility.*;
-import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradeSwitch;
 
 @Component
 @Slf4j
@@ -56,6 +55,9 @@ public class NiftyOrderScheduler {
     // reset the token only and clear order db
     @Scheduled(cron = "0 0 7 * * MON-FRI")
     public void everyDay7AmActivity() {
+        niftyBullish = false;
+        niftyNeutral = true;
+        niftyBearish = false;
         schedulerToken = "";
         tradeSwitch = true;
         niftyOrderMapperRepository.deleteAll();

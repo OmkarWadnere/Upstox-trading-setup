@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.upstox.production.centralconfiguration.utility.CentralUtility.schedulerToken;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.*;
 import static com.upstox.production.nifty.utility.NiftyUtility.*;
 
 @Service
@@ -93,7 +93,7 @@ public class NiftyOrderService {
         log.info("Nifty call flag : " + NiftyUtility.niftyCallOptionFlag + " Put flag : " + NiftyUtility.niftyPutOptionFlag);
         log.info("Thread details : " + isNiftyMainExecutionRunning);
         if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice())) {
-            if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyCallOptionFlag) {
+            if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyCallOptionFlag && ((niftyBullish || niftyNeutral) && !niftyBearish)) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
                     NiftyUtility.niftyCallOptionFlag = true;
@@ -118,7 +118,7 @@ public class NiftyOrderService {
                 }
                 log.info("Selected strike : " + niftyOptionDTO);
                 niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
-            } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyPutOptionFlag){
+            } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyPutOptionFlag && ((niftyBearish || niftyNeutral) && !niftyBullish)){
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
                     NiftyUtility.niftyCallOptionFlag = false;
@@ -145,7 +145,7 @@ public class NiftyOrderService {
                 niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
             }
         } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
-            if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyPutOptionFlag) {
+            if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyPutOptionFlag && ((niftyBearish || niftyNeutral) && !niftyBullish)) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
                     NiftyUtility.niftyCallOptionFlag = false;
@@ -172,7 +172,7 @@ public class NiftyOrderService {
                 log.info("Selected strike : " + niftyOptionDTO);
                 niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
 
-            } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyCallOptionFlag) {
+            } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyCallOptionFlag && ((niftyBullish || niftyNeutral) && !niftyBearish)) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
                     NiftyUtility.niftyCallOptionFlag = true;
