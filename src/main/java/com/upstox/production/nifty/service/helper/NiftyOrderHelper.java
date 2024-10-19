@@ -74,7 +74,7 @@ public class NiftyOrderHelper {
                     .map(NiftyOptionChainDataDTO::getCall_options)
                     .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
 
-            // If no multiples of 100 found, fall back to multiples of 50
+            // If no multiples of 100 found, fall back to multiples of 100 nut in the range of 401 to 500
             if (callOption.isEmpty()) {
                 callOption = niftyOptionChainResponseDTO.getData().stream()
                         .parallel()
@@ -82,7 +82,7 @@ public class NiftyOrderHelper {
                         .filter(data -> {
                             NiftyOptionDTO callOptions = data.getCall_options();
                             double ltp = callOptions.getMarket_data().getLtp();
-                            return ltp >= 401.00 && ltp <= 470.00 && data.getStrike_price() % 50 == 0; // Check LTP and strike price
+                            return ltp >= 401.00 && ltp <= 500.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
                         })
                         .map(NiftyOptionChainDataDTO::getCall_options)
                         .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
@@ -103,7 +103,7 @@ public class NiftyOrderHelper {
                     .map(NiftyOptionChainDataDTO::getPut_options)
                     .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
 
-            // If no multiples of 100 found, fall back to multiples of 50
+            // If no multiples of 100 found, fall back to multiples of 100 but range is 401 to 500
             if (putOption.isEmpty()) {
                 putOption = niftyOptionChainResponseDTO.getData().stream()
                         .parallel()
@@ -111,7 +111,7 @@ public class NiftyOrderHelper {
                         .filter(data -> {
                             NiftyOptionDTO putOptions = data.getPut_options();
                             double ltp = putOptions.getMarket_data().getLtp();
-                            return ltp >= 401.00 && ltp <= 470.00 && data.getStrike_price() % 50 == 0; // Check LTP and strike price
+                            return ltp >= 401.00 && ltp <= 500.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
                         })
                         .map(NiftyOptionChainDataDTO::getPut_options)
                         .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
@@ -177,7 +177,7 @@ public class NiftyOrderHelper {
         if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
             averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
             log.info("Average price : " + averagePrice + " Target point : " + niftyOptionMapping.getProfitPoints());
-            double targetPrice = averagePrice + niftyOptionMapping.getProfitPoints();
+            double targetPrice = Math.round((averagePrice + niftyOptionMapping.getProfitPoints()) * 20)/20.00;
             log.info("Target Price : " + targetPrice);
 
 
