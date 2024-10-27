@@ -20,5 +20,6 @@ public class NiftyOptionMapperRequestDto {
     private Integer averagingTimes;
     private Double profitPoints;
     private Double averagingPointInterval;
+    private Double stopLossPriceRange;
 
 }

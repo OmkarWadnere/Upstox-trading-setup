@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.upstox.production.centralconfiguration.utility.CentralUtility.schedulerToken;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.atulSchedulerToken;
 import static com.upstox.production.nifty.utility.NiftyUtility.*;
 
 @Service
@@ -70,7 +70,7 @@ public class NiftyOrderService {
         // Process buy order Request Data
         OrderRequestDto orderRequestDto = processBuyOrderRequestData(requestData);
         // fetch cmp of  nifty
-        NiftyLtpResponseDTO niftyLtpResponseDTO = niftyOrderHelper.fetchCmp(schedulerToken);
+        NiftyLtpResponseDTO niftyLtpResponseDTO = niftyOrderHelper.fetchCmp(atulSchedulerToken);
         log.info(" nifty CMP: " + niftyLtpResponseDTO);
         double ltp = niftyLtpResponseDTO.getData().get("NSE_INDEX:Nifty 50").getLast_price();
         //get list of eligible call and put options
@@ -83,8 +83,8 @@ public class NiftyOrderService {
             isNiftyMainExecutionRunning = false;
             throw new UpstoxException("There is no future mapping for : " + orderRequestDto.getInstrument_name());
         }
-        if (schedulerToken.isEmpty() || schedulerToken.length() == 0) {
-            schedulerToken = "Bearer " + upstoxLoginRepository.findByEmail(environment.getProperty("email_id")).get().getAccess_token();
+        if (atulSchedulerToken.isEmpty() || atulSchedulerToken.length() == 0) {
+            atulSchedulerToken = "Bearer " + upstoxLoginRepository.findByEmail(environment.getProperty("email_id")).get().getAccess_token();
         }
         log.info("Option Mapping details : " + optionalNiftyFutureMapping);
         NiftyOptionDTO niftyOptionDTO = null;
@@ -109,7 +109,7 @@ public class NiftyOrderService {
                 log.info("Here2");
                 niftyOrderHelper.squareOffAllPositions();
                 log.info("Here3");
-                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), schedulerToken);
+                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
                 log.info("Option chain details : " + niftyOptionChainResponseDTO);
                 niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "CALL_BUY");
                 if (niftyOptionDTO == null) {
@@ -117,7 +117,7 @@ public class NiftyOrderService {
                     throw new UpstoxException("There is no option in our range");
                 }
                 log.info("Selected strike : " + niftyOptionDTO);
-                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
+                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyPutOptionFlag){
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
@@ -134,7 +134,7 @@ public class NiftyOrderService {
                 log.info("Here2");
                 niftyOrderHelper.squareOffAllPositions();
                 log.info("Here3");
-                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), schedulerToken);
+                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
                 niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "PUT_BUY");
                 log.info("Option chain details : " + niftyOptionChainResponseDTO);
                 if (niftyOptionDTO == null) {
@@ -142,7 +142,7 @@ public class NiftyOrderService {
                     throw new UpstoxException("There is no option in our range");
                 }
                 log.info("Selected strike : " + niftyOptionDTO);
-                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
+                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
             }
         } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyPutOptionFlag) {
@@ -161,7 +161,7 @@ public class NiftyOrderService {
                 log.info("Here2");
                 niftyOrderHelper.squareOffAllPositions();
                 log.info("Here3");
-                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), schedulerToken);
+                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
 
                 niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "PUT_BUY");
                 log.info("Option chain details : " + niftyOptionChainResponseDTO);
@@ -170,7 +170,7 @@ public class NiftyOrderService {
                     throw new UpstoxException("There is no option in our range");
                 }
                 log.info("Selected strike : " + niftyOptionDTO);
-                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
+                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
 
             } else if (orderRequestDto.getTransaction_type().equals("SELL") && !NiftyUtility.niftyCallOptionFlag) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
@@ -188,7 +188,7 @@ public class NiftyOrderService {
                 log.info("Here2");
                 niftyOrderHelper.squareOffAllPositions();
                 log.info("Here3");
-                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), schedulerToken);
+                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
                 niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "CALL_BUY");
                 log.info("Option chain details : " + niftyOptionChainResponseDTO);
                 if (niftyOptionDTO == null) {
@@ -196,7 +196,7 @@ public class NiftyOrderService {
                     throw new UpstoxException("There is no option in our range");
                 }
                 log.info("Selected strike : " + niftyOptionDTO);
-                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), schedulerToken);
+                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
             }
         }
         isNiftyMainExecutionRunning = false;
@@ -230,7 +230,7 @@ public class NiftyOrderService {
        int quantity = jsonNode.get("quantity").asInt();
        String instrumentName = jsonNode.get("instrument_name").asText();
        String orderType = jsonNode.get("order_type").asText();
-
+       double price = jsonNode.get("price").asDouble();
        // If you need to convert order_name into a separate JsonNode with key-value pairs
        String[] parts = jsonNode.get("order_name").toString().replace("\"", "").split(" ");
        Map<String, String> map = new HashMap<>();
@@ -243,7 +243,7 @@ public class NiftyOrderService {
                .strikePrice(strikePrice)
                .optionType(optionType)
                .quantity(quantity)
-               .price(Double.parseDouble(map.get("entryPrice")))
+               .price(Math.round(price*100.0)/100.0)
                .instrument_name(instrumentName)
                .order_type("LIMIT")
                .transaction_type(map.get("TYPE").trim().equals("LE") ? "BUY" : "SELL")

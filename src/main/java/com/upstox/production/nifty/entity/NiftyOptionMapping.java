@@ -28,4 +28,5 @@ public class NiftyOptionMapping {
     private Double profitPoints;
     private Integer averagingTimes;
     private Double averagingPointInterval;
+    private Double stopLossPriceRange;
 }
