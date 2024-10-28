@@ -125,6 +125,7 @@ public class NiftyOrderHelper {
         ObjectMapper objectMapper = new ObjectMapper();
         niftyCurrentInstrument = niftyOptionDTO.getInstrument_key();
         niftyCurrentOptionTradeHigh = 0.00;
+        niftyTargetTradeStatus = false;
         // place 1st market order
         String requestBody = "{"
                 + "\"quantity\": " + niftyOptionMapping.getQuantity() * niftyOptionMapping.getNumberOfLots() + ","
