@@ -116,6 +116,8 @@ public class NiftyOrderScheduler {
                 if (currentOptionLtp <= niftyTrailSlPrice) {
                     niftyOrderHelper.squareOffAllPositions();
                     niftyOrderHelper.cancelAllOpenOrders();
+                    niftyCallOptionFlag = false;
+                    niftyPutOptionFlag = false;
                 }
                 Iterable<NiftyOrderMapper> niftyOrderMapperIterable = niftyOrderMapperRepository.findAll();
                 List<NiftyOrderMapper> niftyOrderMappers = convertIterableToListOrderMapper(niftyOrderMapperIterable);
