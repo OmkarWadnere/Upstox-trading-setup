@@ -58,6 +58,8 @@ public class NiftyOrderScheduler {
     public void everyDay7AmActivity() {
         atulSchedulerToken = "";
         tradeSwitch = true;
+        omkarSchedulerToken = "";
+        niftyTargetTradeStatus = false;
         niftyOrderMapperRepository.deleteAll();
         niftyMorningTradeCounter = 0;
     }
@@ -130,13 +132,16 @@ public class NiftyOrderScheduler {
                         OrderData targetOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
                         if (targetOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
                             niftyTrailSlPrice = niftyOptionBuyPrice;
+                            niftyTargetTradeStatus = true;
                             niftyOptionHighPrice = niftyOptionInitialTargetPrice;
                             niftyOrderMapperRepository.delete(niftyOrderMapper);
                         }
                     }
                 }
-                niftyOptionHighPrice = Math.max(niftyOptionHighPrice, currentOptionLtp);
-                niftyTrailSlPrice = niftyOptionHighPrice-50 < 0 ? ((niftyOptionHighPrice-50) * (-1)) : niftyOptionHighPrice-50;
+                if (niftyTargetTradeStatus) {
+                    niftyOptionHighPrice = Math.max(niftyOptionHighPrice, currentOptionLtp);
+                    niftyTrailSlPrice = niftyOptionHighPrice - 50 < 0 ? ((niftyOptionHighPrice - 50) * (-1)) : niftyOptionHighPrice - 50;
+                }
             }
         }
         log.info("Per Two Second execution end : " + LocalDateTime.now());

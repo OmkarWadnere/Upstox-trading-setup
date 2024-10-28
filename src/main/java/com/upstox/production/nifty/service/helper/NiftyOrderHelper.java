@@ -183,6 +183,7 @@ public class NiftyOrderHelper {
             niftyOptionBuyPrice = averagePrice;
             niftyOptionInitialTargetPrice = targetPrice;
             niftyTrailSlPrice = averagePrice - niftyOptionMapping.getStopLossPriceRange();
+            log.info("Nifty Trail SL price : " + niftyTrailSlPrice);
             log.info("Target Price : " + targetPrice);
             int quantity = placedMarketOrderResponse.getData().getQuantity()/2;
             niftyRemainingQuantity = placedMarketOrderResponse.getData().getQuantity()/2;

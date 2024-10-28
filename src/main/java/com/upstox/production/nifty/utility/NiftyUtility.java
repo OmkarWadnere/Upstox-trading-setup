@@ -19,5 +19,6 @@ public class NiftyUtility {
     public static double niftyTrailSlPrice = 0.00;
     public static int niftyRemainingQuantity = 0;
     public static String niftyCurrentInstrument = "";
+    public static boolean niftyTargetTradeStatus = false;
 
 }
