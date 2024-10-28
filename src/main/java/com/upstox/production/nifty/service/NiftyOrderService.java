@@ -134,15 +134,15 @@ public class NiftyOrderService {
                 log.info("Here2");
                 niftyOrderHelper.squareOffAllPositions();
                 log.info("Here3");
-                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
-                niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "PUT_BUY");
-                log.info("Option chain details : " + niftyOptionChainResponseDTO);
-                if (niftyOptionDTO == null) {
-                    isNiftyMainExecutionRunning = false;
-                    throw new UpstoxException("There is no option in our range");
-                }
-                log.info("Selected strike : " + niftyOptionDTO);
-                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
+//                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
+//                niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "PUT_BUY");
+//                log.info("Option chain details : " + niftyOptionChainResponseDTO);
+//                if (niftyOptionDTO == null) {
+//                    isNiftyMainExecutionRunning = false;
+//                    throw new UpstoxException("There is no option in our range");
+//                }
+//                log.info("Selected strike : " + niftyOptionDTO);
+//                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
             }
         } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyPutOptionFlag) {
@@ -188,15 +188,15 @@ public class NiftyOrderService {
                 log.info("Here2");
                 niftyOrderHelper.squareOffAllPositions();
                 log.info("Here3");
-                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
-                niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "CALL_BUY");
-                log.info("Option chain details : " + niftyOptionChainResponseDTO);
-                if (niftyOptionDTO == null) {
-                    isNiftyMainExecutionRunning = false;
-                    throw new UpstoxException("There is no option in our range");
-                }
-                log.info("Selected strike : " + niftyOptionDTO);
-                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
+//                NiftyOptionChainResponseDTO niftyOptionChainResponseDTO = niftyOrderHelper.getOptionChain(optionalNiftyFutureMapping.get(), atulSchedulerToken);
+//                niftyOptionDTO = niftyOrderHelper.filterNiftyOptionStrike(niftyOptionChainResponseDTO, "CALL_BUY");
+//                log.info("Option chain details : " + niftyOptionChainResponseDTO);
+//                if (niftyOptionDTO == null) {
+//                    isNiftyMainExecutionRunning = false;
+//                    throw new UpstoxException("There is no option in our range");
+//                }
+//                log.info("Selected strike : " + niftyOptionDTO);
+//                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
             }
         }
         isNiftyMainExecutionRunning = false;
