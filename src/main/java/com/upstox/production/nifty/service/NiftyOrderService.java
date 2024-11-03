@@ -24,6 +24,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
@@ -32,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.atulSchedulerToken;
 import static com.upstox.production.nifty.utility.NiftyUtility.*;
@@ -43,6 +48,9 @@ public class NiftyOrderService {
     private static final Log log = LogFactory.getLog(NiftyOrderService.class);
 
     private static final Double MULTIPLIER = 0.05;
+
+    private final BlockingQueue<OrderRequestDto> requestQueue = new LinkedBlockingQueue<>();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Autowired
     private Environment environment;
@@ -59,7 +67,22 @@ public class NiftyOrderService {
     @Autowired
     private NiftyOrderHelper niftyOrderHelper;
 
-    public void buyOrderExecution(String requestData) throws UpstoxException, IOException, InterruptedException, UnirestException, URISyntaxException {
+    @PostConstruct
+    public void init() {
+        executorService.submit(() -> {
+            while (true) {
+                try {
+                    OrderRequestDto orderRequestDto = requestQueue.take();
+                    processOrder(orderRequestDto);
+                } catch (InterruptedException | UnirestException | IOException | URISyntaxException | UpstoxException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+    }
+
+    public void addOrderToQueue(String requestData) throws IOException, InterruptedException, UpstoxException {
         isNiftyMainExecutionRunning = true;
         LocalTime now = LocalTime.now();
         if (now.isAfter(LocalTime.of(15,24, 30))) {
@@ -87,12 +110,31 @@ public class NiftyOrderService {
             atulSchedulerToken = "Bearer " + upstoxLoginRepository.findByEmail(environment.getProperty("email_id")).get().getAccess_token();
         }
         log.info("Option Mapping details : " + optionalNiftyFutureMapping);
-        NiftyOptionDTO niftyOptionDTO = null;
-        log.info("order request data : " + orderRequestDto);
+        log.info("order requestData data : " + orderRequestDto);
         log.info("Strike price : " + orderRequestDto.getStrikePrice());
         log.info("Nifty call flag : " + NiftyUtility.niftyCallOptionFlag + " Put flag : " + NiftyUtility.niftyPutOptionFlag);
         log.info("Thread details : " + isNiftyMainExecutionRunning);
-        if (orderRequestDto.getOptionType().equals("CALL") && callStrikes.contains(orderRequestDto.getStrikePrice())) {
+        if (((orderRequestDto.getOptionType().equals("CALL") &&
+                (orderRequestDto.getTransaction_type().equals("BUY") || orderRequestDto.getTransaction_type().equals("SELL")))
+                && callStrikes.contains(orderRequestDto.getStrikePrice())) ||
+                ((orderRequestDto.getOptionType().equals("PUT") &&
+                (orderRequestDto.getTransaction_type().equals("BUY") || orderRequestDto.getTransaction_type().equals("SELL")))
+                && putStrikes.contains(orderRequestDto.getStrikePrice()))) {
+            requestQueue.add(orderRequestDto);
+        }
+
+    }
+
+    private void processOrder(OrderRequestDto orderRequestDto) throws UnirestException, IOException, URISyntaxException, InterruptedException, UpstoxException {
+        // Call buyOrderExecution or any other relevant method here
+        buyOrderExecution(orderRequestDto);
+    }
+
+    public void buyOrderExecution(OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException, URISyntaxException {
+        LocalTime now = LocalTime.now();
+        NiftyOptionDTO niftyOptionDTO = null;
+        Optional<NiftyOptionMapping> optionalNiftyFutureMapping = niftyOptionMappingRepository.findByInstrumentToken(orderRequestDto.getInstrument_name());
+        if (orderRequestDto.getOptionType().equals("CALL")) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyCallOptionFlag) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;
@@ -142,7 +184,7 @@ public class NiftyOrderService {
 //                log.info("Selected strike : " + niftyOptionDTO);
 //                niftyOrderHelper.placeBuyOrder(niftyOptionDTO, optionalNiftyFutureMapping.get(), atulSchedulerToken);
             }
-        } else if (orderRequestDto.getOptionType().equals("PUT") && putStrikes.contains(orderRequestDto.getStrikePrice())) {
+        } else if (orderRequestDto.getOptionType().equals("PUT")) {
             if (orderRequestDto.getTransaction_type().equals("BUY") && !NiftyUtility.niftyPutOptionFlag) {
                 if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(9, 30)) && niftyMorningTradeCounter < 1) {
                     niftyMorningTradeCounter++;

@@ -26,14 +26,7 @@ public class NiftyOrderController {
     public void NiftyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
                                           @RequestBody String niftyPayload) throws UpstoxException, IOException, UnirestException, InterruptedException, URISyntaxException {
         if (tradeSwitch) {
-            if (isNiftyMainExecutionRunning) {
-                Thread.sleep(3000);
-                niftyOrderService.buyOrderExecution(niftyPayload);
-            } else {
-                isNiftyMainExecutionRunning = true;
-                niftyOrderService.buyOrderExecution(niftyPayload);
-            }
-
+            niftyOrderService.addOrderToQueue(niftyPayload);
         } else {
             log.info("!!!Someone has closed trading for remaining day!!!");
         }
