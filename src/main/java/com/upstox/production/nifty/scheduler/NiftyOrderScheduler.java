@@ -142,7 +142,7 @@ public class NiftyOrderScheduler {
                 }
                 if (niftyTargetTradeStatus) {
                     niftyOptionHighPrice = Math.max(niftyOptionHighPrice, currentOptionLtp);
-                    niftyTrailSlPrice = niftyOptionHighPrice - 50 < 0 ? ((niftyOptionHighPrice - 50) * (-1)) : niftyOptionHighPrice - 50;
+                    niftyTrailSlPrice = niftyOptionHighPrice - 60 < 0 ? ((niftyOptionHighPrice - 60) * (-1)) : niftyOptionHighPrice - 60;
                 }
             }
         }
