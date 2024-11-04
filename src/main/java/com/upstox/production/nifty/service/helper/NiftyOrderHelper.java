@@ -69,7 +69,7 @@ public class NiftyOrderHelper {
                     .filter(data -> {
                         NiftyOptionDTO callOptions = data.getCall_options();
                         double ltp = callOptions.getMarket_data().getLtp();
-                        return ltp >= 401.00 && ltp <= 480.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
+                        return ltp >= 401.00 && ltp <= 490.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
                     })
                     .map(NiftyOptionChainDataDTO::getCall_options)
                     .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
@@ -98,7 +98,7 @@ public class NiftyOrderHelper {
                     .filter(data -> {
                         NiftyOptionDTO putOptions = data.getPut_options();
                         double ltp = putOptions.getMarket_data().getLtp();
-                        return ltp >= 401.00 && ltp <= 480.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
+                        return ltp >= 401.00 && ltp <= 490.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
                     })
                     .map(NiftyOptionChainDataDTO::getPut_options)
                     .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
