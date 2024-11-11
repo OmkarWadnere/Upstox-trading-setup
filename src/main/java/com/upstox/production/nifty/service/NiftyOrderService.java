@@ -125,12 +125,12 @@ public class NiftyOrderService {
 
     }
 
-    private void processOrder(OrderRequestDto orderRequestDto) throws UnirestException, IOException, URISyntaxException, InterruptedException, UpstoxException {
+    private synchronized void processOrder(OrderRequestDto orderRequestDto) throws UnirestException, IOException, URISyntaxException, InterruptedException, UpstoxException {
         // Call buyOrderExecution or any other relevant method here
         buyOrderExecution(orderRequestDto);
     }
 
-    public void buyOrderExecution(OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException, URISyntaxException {
+    public synchronized void buyOrderExecution(OrderRequestDto orderRequestDto) throws UpstoxException, IOException, InterruptedException, UnirestException, URISyntaxException {
         LocalTime now = LocalTime.now();
         NiftyOptionDTO niftyOptionDTO = null;
         Optional<NiftyOptionMapping> optionalNiftyFutureMapping = niftyOptionMappingRepository.findByInstrumentToken(orderRequestDto.getInstrument_name());
