@@ -42,6 +42,7 @@ public class NiftyOptionMappingService {
                 .numberOfLots(optionMapperRequestDto.getNumberOfLots())
                 .averagingPointInterval(optionMapperRequestDto.getAveragingPointInterval())
                 .averagingTimes(optionMapperRequestDto.getAveragingTimes())
-                .profitPoints(optionMapperRequestDto.getProfitPoints()).build();
+                .profitPoints(optionMapperRequestDto.getProfitPoints())
+                .stopLossPriceRange(optionMapperRequestDto.getStopLossPriceRange()).build();
     }
 }

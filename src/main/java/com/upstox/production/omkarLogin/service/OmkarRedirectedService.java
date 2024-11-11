@@ -1,4 +1,4 @@
-package com.upstox.production.centralconfiguration.service;
+package com.upstox.production.omkarLogin.service;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -12,12 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.Optional;
 
 @Service
 @PropertySource("classpath:data.properties")
-public class RedirectedService {
+public class OmkarRedirectedService {
 
     @Autowired
     private Environment environment;
@@ -32,9 +33,9 @@ public class RedirectedService {
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("Accept", "application/json")
                 .field("code", code)
-                .field("client_id", environment.getProperty("client_id"))
-                .field("client_secret", environment.getProperty("client_secrete"))
-                .field("redirect_uri", environment.getProperty("redirect_url"))
+                .field("client_id", environment.getProperty("omkar_client_id"))
+                .field("client_secret", environment.getProperty("omkar_client_secrete"))
+                .field("redirect_uri", environment.getProperty("omkar_redirect_url"))
                 .field("grant_type", "authorization_code").asJson();
         // Print the response
         UpstoxLoginDto upstoxLoginDto = buildUpstoxLoginDtoFromHttpResponse(response.getBody());
@@ -46,7 +47,7 @@ public class RedirectedService {
         } else {
             upstoxLogin = buildUpstoxLogin(upstoxLoginDto);
         }
-        CentralUtility.atulSchedulerToken = "Bearer " + upstoxLogin.getAccess_token();
+        CentralUtility.omkarSchedulerToken = "Bearer " + upstoxLogin.getAccess_token();
         return upstoxLoginRepository.save(upstoxLogin);
     }
 

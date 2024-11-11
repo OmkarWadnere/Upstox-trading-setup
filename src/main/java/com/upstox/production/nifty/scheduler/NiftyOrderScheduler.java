@@ -7,6 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.dto.OrderData;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
+import com.upstox.production.nifty.dto.NiftyLtpResponseDTO;
 import com.upstox.production.nifty.entity.NiftyNextOptionMapping;
 import com.upstox.production.nifty.entity.NiftyOptionMapping;
 import com.upstox.production.nifty.entity.NiftyOrderMapper;
@@ -32,9 +33,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.upstox.production.centralconfiguration.utility.CentralUtility.schedulerToken;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.*;
 import static com.upstox.production.nifty.utility.NiftyUtility.*;
-import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradeSwitch;
 
 @Component
 @Slf4j
@@ -56,8 +56,10 @@ public class NiftyOrderScheduler {
     // reset the token only and clear order db
     @Scheduled(cron = "0 0 7 * * MON-FRI")
     public void everyDay7AmActivity() {
-        schedulerToken = "";
+        atulSchedulerToken = "";
         tradeSwitch = true;
+        omkarSchedulerToken = "";
+        niftyTargetTradeStatus = false;
         niftyOrderMapperRepository.deleteAll();
         niftyMorningTradeCounter = 0;
     }
@@ -99,6 +101,55 @@ public class NiftyOrderScheduler {
         }
     }
 
+    @Scheduled(cron = "*/2 * 9-15 * * MON-FRI")
+    public void getNiftyOptionLtp() throws UpstoxException, IOException, InterruptedException, UnirestException {
+        log.info("Per Two Second execution start : " + LocalDateTime.now());
+        HttpClient httpClient = HttpClient.newHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+        if (tradeSwitch) {
+            LocalTime now = LocalTime.now();
+            List<OrderData> completedOrderList = new ArrayList<>();
+            // Check if the current time is between 9:15 AM and 3:30 PM
+            if (now.isAfter(LocalTime.of(9, 15)) && now.isBefore(LocalTime.of(15, 25)) && !isNiftyMainExecutionRunning) {
+                NiftyLtpResponseDTO niftyLtpResponseDTO = fetchNiftyOptionCmp();
+                double currentOptionLtp = niftyLtpResponseDTO.getData().values().stream().findFirst().get().getLast_price();
+                if (currentOptionLtp <= niftyTrailSlPrice) {
+                    niftyOrderHelper.squareOffAllPositions();
+                    niftyOrderHelper.cancelAllOpenOrders();
+                    niftyCallOptionFlag = false;
+                    niftyPutOptionFlag = false;
+                }
+                Iterable<NiftyOrderMapper> niftyOrderMapperIterable = niftyOrderMapperRepository.findAll();
+                List<NiftyOrderMapper> niftyOrderMappers = convertIterableToListOrderMapper(niftyOrderMapperIterable);
+                for (NiftyOrderMapper niftyOrderMapper : niftyOrderMappers) {
+                    if (niftyOrderMapper.getOrderType().equalsIgnoreCase("SELL")) {
+                        String orderDetailsUrl = environment.getProperty("upstox_url") + environment.getProperty("order_details") + niftyOrderMapper.getOrderId();
+                        HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(orderDetailsUrl))
+                                .header("Content-Type", "application/json")
+                                .header("Accept", "application/json")
+                                .header("Authorization", atulSchedulerToken)
+                                .build();
+                        HttpResponse<String> orderDetailsResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                        OrderData targetOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
+                        if (targetOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
+                            niftyTrailSlPrice = niftyOptionBuyPrice;
+                            niftyTargetTradeStatus = true;
+                            niftyOptionHighPrice = niftyOptionInitialTargetPrice;
+                            niftyOrderMapperRepository.delete(niftyOrderMapper);
+                        }
+                    }
+                }
+                if (niftyTargetTradeStatus) {
+                    niftyOptionHighPrice = Math.max(niftyOptionHighPrice, currentOptionLtp);
+                    niftyTrailSlPrice = niftyOptionHighPrice - 60 < 0 ? ((niftyOptionHighPrice - 60) * (-1)) : niftyOptionHighPrice - 60;
+                }
+            }
+        }
+        log.info("Per Two Second execution end : " + LocalDateTime.now());
+    }
+
+
 //    @Scheduled(cron = "*/5 * 9-15 * * MON-FRI")
     public void recurrenceOrderExecutionAndChecks() throws UpstoxException, IOException, InterruptedException, UnirestException {
         log.info("Trade switch : " + tradeSwitch + "at time " + LocalDateTime.now());
@@ -122,7 +173,7 @@ public class NiftyOrderScheduler {
                             .uri(URI.create(orderDetailsUrl))
                             .header("Content-Type", "application/json")
                             .header("Accept", "application/json")
-                            .header("Authorization", schedulerToken)
+                            .header("Authorization", atulSchedulerToken)
                             .build();
                     HttpClient httpClient = HttpClient.newBuilder().build();
                     ObjectMapper objectMapper = new ObjectMapper();
@@ -136,7 +187,7 @@ public class NiftyOrderScheduler {
                     OrderData placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
                     log.info("schedular orders SELL Response: " + placedMarketOrderResponse);
                     if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
-                         cancelAllBuyOrders(niftyOrderMappers, schedulerToken);
+                         cancelAllBuyOrders(niftyOrderMappers, atulSchedulerToken);
 //                       niftyOrderHelper.cancelAllOpenOrders();
                         log.info("Order completed : " + niftyOrderMapper.getOrderId());
                     }
@@ -151,7 +202,7 @@ public class NiftyOrderScheduler {
                                 .uri(URI.create(orderDetailsUrl))
                                 .header("Content-Type", "application/json")
                                 .header("Accept", "application/json")
-                                .header("Authorization", schedulerToken)
+                                .header("Authorization", atulSchedulerToken)
                                 .build();
                         HttpClient httpClient = HttpClient.newBuilder().build();
                         ObjectMapper objectMapper = new ObjectMapper();
@@ -171,7 +222,7 @@ public class NiftyOrderScheduler {
                     }
                 }
                 if (!completedOrderList.isEmpty()) {
-                    placeModifyOrder(niftyOrderMappers, completedOrderList, schedulerToken);
+                    placeModifyOrder(niftyOrderMappers, completedOrderList, atulSchedulerToken);
                 }
             }
         }
@@ -245,6 +296,23 @@ public class NiftyOrderScheduler {
         }
     }
 
+    public NiftyLtpResponseDTO fetchNiftyOptionCmp() throws IOException, InterruptedException {
+        String niftyInstrument = niftyCurrentInstrument.replace("|" , "%7C");
+        String url = "https://api.upstox.com/v2/market-quote/ltp?instrument_key=" + niftyInstrument;
+        String acceptHeader = "application/json";
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept", acceptHeader)
+                .header("Authorization", omkarSchedulerToken)
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        log.info("Current market price received : " + response.body());
+        return objectMapper.readValue(response.body(), NiftyLtpResponseDTO.class);
+    }
 
     private static List<NiftyOptionMapping> convertIterableToListOptionMapping(Iterable<NiftyOptionMapping> iterable) {
         List<NiftyOptionMapping> list = new ArrayList<>();
