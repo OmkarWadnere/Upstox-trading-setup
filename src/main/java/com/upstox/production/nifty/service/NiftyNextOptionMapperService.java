@@ -36,7 +36,6 @@ public class NiftyNextOptionMapperService {
     }
 
     public void validateData(NiftyOptionMapperRequestDto optionMapperRequestDto) throws UpstoxException {
-        Optional<NiftyNextOptionMapping> optionalNextOptionMappingInstrumentToken = niftyNextOptionMapperRepository.findByInstrumentToken(optionMapperRequestDto.getInstrument_token());
         Optional<NiftyNextOptionMapping> optionalNextOptionMappingExpiryDate = niftyNextOptionMapperRepository.findByExpiryDate(optionMapperRequestDto.getExpiry_date());
         if (optionalNextOptionMappingExpiryDate.isPresent()) {
             throw new UpstoxException("The provided Expiry Date already exists");
@@ -56,6 +55,7 @@ public class NiftyNextOptionMapperService {
                 .numberOfLots(optionMapperRequestDto.getNumberOfLots())
                 .averagingPointInterval(optionMapperRequestDto.getAveragingPointInterval())
                 .averagingTimes(optionMapperRequestDto.getAveragingTimes())
-                .profitPoints(optionMapperRequestDto.getProfitPoints()).build();
+                .profitPoints(optionMapperRequestDto.getProfitPoints())
+                .stopLossPriceRange(optionMapperRequestDto.getStopLossPriceRange()).build();
     }
 }
