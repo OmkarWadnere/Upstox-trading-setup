@@ -1,6 +1,7 @@
 package com.upstox.production.centralconfiguration.controller;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.service.UpstoxLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,7 @@ public class UpstoxLoginController {
 
     @GetMapping("/getLoginUrl")
     @ResponseStatus(HttpStatus.OK)
-    public String loggedIn() throws UnirestException {
+    public String loggedIn() throws UnirestException, UpstoxException {
         return upstoxLoginService.getUpstoxLoginUrl();
     }
 }

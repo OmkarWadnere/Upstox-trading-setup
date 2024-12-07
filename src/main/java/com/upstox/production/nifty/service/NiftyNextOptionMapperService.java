@@ -1,6 +1,7 @@
 package com.upstox.production.nifty.service;
 
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
+import com.upstox.production.centralconfiguration.utility.CentralUtility;
 import com.upstox.production.nifty.dto.NiftyOptionMapperRequestDto;
 import com.upstox.production.nifty.entity.NiftyNextOptionMapping;
 import com.upstox.production.nifty.entity.NiftyOptionMapping;
@@ -21,13 +22,17 @@ public class NiftyNextOptionMapperService {
     private NiftyOptionMappingRepository niftyOptionMappingRepository;
 
     public String addNextOptionMapping(NiftyOptionMapperRequestDto optionMapperRequestDto) throws UpstoxException {
-        niftyNextOptionMapperRepository.deleteAll();
-        // validate data is already present or not
-        validateData(optionMapperRequestDto);
+        if (CentralUtility.authenticatedUser) {
+            niftyNextOptionMapperRepository.deleteAll();
+            // validate data is already present or not
+            validateData(optionMapperRequestDto);
 
-        // dto to entity conversion
-        NiftyNextOptionMapping nextOptionMapping = nextOptionMappingBuilder(optionMapperRequestDto);
-        return niftyNextOptionMapperRepository.save(nextOptionMapping).toString();
+            // dto to entity conversion
+            NiftyNextOptionMapping nextOptionMapping = nextOptionMappingBuilder(optionMapperRequestDto);
+            return niftyNextOptionMapperRepository.save(nextOptionMapping).toString();
+        } else {
+            throw new UpstoxException("User is not authorized to access!!!");
+        }
     }
 
     public void validateData(NiftyOptionMapperRequestDto optionMapperRequestDto) throws UpstoxException {

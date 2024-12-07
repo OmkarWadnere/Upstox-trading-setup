@@ -1,17 +1,17 @@
 server:
   port: 443
-  ssl:
-    key-store: keystore.p12
-    key-store-password: Root@123
-    keyStoreType: PKCS12
-    keyAlias: tomcat
+#  ssl:
+#    key-store: keystore.p12
+#    key-store-password: Root@123
+#    keyStoreType: PKCS12
+#    keyAlias: tomcat
 spring:
   application:
     name: PERSONAL-BROKER
   datasource:
     url: jdbc:mysql://localhost:3306/broker?autoReconnect=true&useSSL=false
     username: root
-    password: $Root123
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       minimum-idle: 10
@@ -29,3 +29,21 @@ spring:
       charset: UTF-8
       enabled: true
       force: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: omkar.wadnere0779@gmail.com
+    password: sgvp zwmm yhzb zoyh
+    properties:
+      mail:
+        transport:
+          protocol: smtp                 # Protocol to use
+        smtp:
+          auth: true                     # Enable authentication
+          starttls:
+            enable: true                 # Enable STARTTLS for secure connection
+          connectiontimeout: 5000        # Connection timeout in milliseconds
+          timeout: 5000                  # Socket timeout in milliseconds
+          writetimeout: 5000             # Write timeout in milliseconds
+          pool: true                     # Enable connection pooling
+          poolsize: 5                    # Optional: Maximum connections in the pool (custom property)

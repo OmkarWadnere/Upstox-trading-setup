@@ -2,6 +2,7 @@ package com.upstox.production.omkarLogin.controller;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
+import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.omkarLogin.service.OmkarRedirectedService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,7 @@ public class OmkarRedirectedController {
     private OmkarRedirectedService omkarRedirectedService;
 
     @GetMapping("/toGetToken")
-    public UpstoxLogin redirected(@RequestParam String code) throws IOException, UnirestException {
+    public UpstoxLogin redirected(@RequestParam String code) throws IOException, UnirestException, UpstoxException {
         return omkarRedirectedService.redirctedUrl(code);
     }
 }

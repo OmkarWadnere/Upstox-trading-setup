@@ -1,7 +1,12 @@
 package com.upstox.production.centralconfiguration.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 
 @Getter
@@ -12,97 +17,97 @@ import lombok.*;
 @ToString
 public class OrderDetails {
 
-        @JsonProperty("exchange")
-        private String exchange;
+    @JsonProperty("exchange")
+    private String exchange;
 
-        @JsonProperty("product")
-        private String product;
+    @JsonProperty("product")
+    private String product;
 
-        @JsonProperty("price")
-        private double price;
+    @JsonProperty("price")
+    private double price;
 
-        @JsonProperty("quantity")
-        private int quantity;
+    @JsonProperty("quantity")
+    private int quantity;
 
-        @JsonProperty("status")
-        private String orderStatus;
+    @JsonProperty("status")
+    private String orderStatus;
 
-        @JsonProperty("tag")
-        private String tag;
+    @JsonProperty("tag")
+    private String tag;
 
-        @JsonProperty("instrument_token")
-        private String instrumentToken;
+    @JsonProperty("instrument_token")
+    private String instrumentToken;
 
-        @JsonProperty("placed_by")
-        private String placedBy;
+    @JsonProperty("placed_by")
+    private String placedBy;
 
-        @JsonProperty("trading_symbol")
-        private String tradingSymbol;
+    @JsonProperty("trading_symbol")
+    private String tradingSymbol;
 
-        @JsonProperty("tradingsymbol")
-        private String tradingSymbolAlt;
+    @JsonProperty("tradingsymbol")
+    private String tradingSymbolAlt;
 
-        @JsonProperty("order_type")
-        private String orderType;
+    @JsonProperty("order_type")
+    private String orderType;
 
-        @JsonProperty("validity")
-        private String validity;
+    @JsonProperty("validity")
+    private String validity;
 
-        @JsonProperty("trigger_price")
-        private double triggerPrice;
+    @JsonProperty("trigger_price")
+    private double triggerPrice;
 
-        @JsonProperty("disclosed_quantity")
-        private int disclosedQuantity;
+    @JsonProperty("disclosed_quantity")
+    private int disclosedQuantity;
 
-        @JsonProperty("transaction_type")
-        private String transactionType;
+    @JsonProperty("transaction_type")
+    private String transactionType;
 
-        @JsonProperty("average_price")
-        private double averagePrice;
+    @JsonProperty("average_price")
+    private double averagePrice;
 
-        @JsonProperty("filled_quantity")
-        private int filledQuantity;
+    @JsonProperty("filled_quantity")
+    private int filledQuantity;
 
-        @JsonProperty("pending_quantity")
-        private int pendingQuantity;
+    @JsonProperty("pending_quantity")
+    private int pendingQuantity;
 
-        @JsonProperty("exchange_order_id")
-        private String exchangeOrderId;
+    @JsonProperty("exchange_order_id")
+    private String exchangeOrderId;
 
-        @JsonProperty("parent_order_id")
-        private String parentOrderId;
+    @JsonProperty("parent_order_id")
+    private String parentOrderId;
 
-        @JsonProperty("order_id")
-        private String orderId;
+    @JsonProperty("order_id")
+    private String orderId;
 
-        @JsonProperty("variety")
-        private String variety;
+    @JsonProperty("variety")
+    private String variety;
 
-        @JsonProperty("order_timestamp")
-        private String orderTimestamp;
+    @JsonProperty("order_timestamp")
+    private String orderTimestamp;
 
-        @JsonProperty("exchange_timestamp")
-        private String exchangeTimestamp;
+    @JsonProperty("exchange_timestamp")
+    private String exchangeTimestamp;
 
-        @JsonProperty("is_amo")
-        private boolean isAmo;
+    @JsonProperty("is_amo")
+    private boolean isAmo;
 
-        @JsonProperty("order_request_id")
-        private String orderRequestId;
+    @JsonProperty("order_request_id")
+    private String orderRequestId;
 
-        @JsonProperty("order_ref_id")
-        private String orderRefId;
+    @JsonProperty("order_ref_id")
+    private String orderRefId;
 
-        @JsonProperty("guid")
-        private String guid;
+    @JsonProperty("guid")
+    private String guid;
 
-        @JsonProperty("status_message")
-        private String status_message;
+    @JsonProperty("status_message")
+    private String status_message;
 
-        @JsonProperty("status_message_raw")
-        private String status_message_raw;
+    @JsonProperty("status_message_raw")
+    private String status_message_raw;
 
-        @JsonProperty("errors")
-        private String errors;
+    @JsonProperty("errors")
+    private String errors;
 
 }

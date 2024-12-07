@@ -2,6 +2,7 @@ package com.upstox.production.centralconfiguration.controller;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
+import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.service.RedirectedService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,7 @@ public class RedirectedController {
     private RedirectedService redirectedService;
 
     @GetMapping("/toGetToken")
-    public UpstoxLogin redirected(@RequestParam String code) throws IOException, UnirestException {
+    public UpstoxLogin redirected(@RequestParam String code) throws IOException, UnirestException, UpstoxException {
         return redirectedService.redirctedUrl(code);
     }
 }

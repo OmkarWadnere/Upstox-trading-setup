@@ -13,6 +13,7 @@ public interface NiftyNextOptionMapperRepository extends CrudRepository<NiftyNex
     Optional<NiftyNextOptionMapping> findByInstrumentToken(String instrumentToken);
 
     Optional<NiftyNextOptionMapping> findByExpiryDate(LocalDate expiryDate);
+
     Optional<NiftyNextOptionMapping> findBySymbolName(String symbolName);
 
 }

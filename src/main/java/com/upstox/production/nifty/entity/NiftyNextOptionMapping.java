@@ -4,7 +4,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
@@ -28,5 +33,6 @@ public class NiftyNextOptionMapping {
     private Double profitPoints;
     private Integer averagingTimes;
     private Double averagingPointInterval;
+    private Double stopLossPriceRange;
 
 }

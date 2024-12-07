@@ -12,5 +12,6 @@ public interface NiftyOptionMappingRepository extends CrudRepository<NiftyOption
     Optional<NiftyOptionMapping> findByInstrumentToken(String instrumentToken);
 
     Optional<NiftyOptionMapping> findByExpiryDate(LocalDate expiryDate);
+
     Optional<NiftyOptionMapping> findBySymbolName(String symbolName);
 }

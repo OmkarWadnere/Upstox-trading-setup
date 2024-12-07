@@ -3,7 +3,8 @@
     <!-- Console Appender Configuration -->
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{dd-MMM-yyyy HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+            <!-- %class{0} will show the fully qualified class name -->
+            <pattern>%d{dd-MMM-yyyy HH:mm:ss} %-5level %class{0} - %msg%n</pattern>
         </layout>
     </appender>
 
@@ -14,20 +15,21 @@
             <maxHistory>100</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{dd-MMM-yyyy HH:mm:ss} [%t] %-5level %logger{36} - %msg%n</pattern>
+            <!-- Include %class{0} for the fully qualified class name -->
+            <pattern>%d{dd-MMM-yyyy HH:mm:ss} [%t] %-5level %class{0} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <!-- Root Logger Configuration -->
     <root level="ERROR">
-        <appender-ref ref="Console" />
-        <appender-ref ref="File" />
+        <appender-ref ref="Console"/>
+        <appender-ref ref="File"/>
     </root>
 
     <!-- Logger Configuration for the com.upstox package -->
     <logger name="com.upstox" level="DEBUG">
-        <appender-ref ref="Console" />
-        <appender-ref ref="File" />
+        <appender-ref ref="Console"/>
+        <appender-ref ref="File"/>
     </logger>
 
 </configuration>

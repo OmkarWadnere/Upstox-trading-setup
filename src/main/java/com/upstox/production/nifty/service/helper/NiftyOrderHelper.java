@@ -1,10 +1,15 @@
 package com.upstox.production.nifty.service.helper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.upstox.production.centralconfiguration.dto.*;
+import com.upstox.production.centralconfiguration.dto.AllOrderDetailsDto;
+import com.upstox.production.centralconfiguration.dto.GetPositionResponseDto;
+import com.upstox.production.centralconfiguration.dto.OrderData;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
+import com.upstox.production.centralconfiguration.mails.ApplicationMailSender;
 import com.upstox.production.nifty.dto.NiftyLtpResponseDTO;
 import com.upstox.production.nifty.dto.NiftyOptionChainDataDTO;
 import com.upstox.production.nifty.dto.NiftyOptionChainResponseDTO;
@@ -25,10 +30,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Optional;
 
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.atulSchedulerToken;
-import static com.upstox.production.nifty.utility.NiftyUtility.*;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.omkarSchedulerToken;
+import static com.upstox.production.nifty.utility.NiftyUtility.currentTradeExpiryDate;
+import static com.upstox.production.nifty.utility.NiftyUtility.niftyCurrentInstrumentToken;
+import static com.upstox.production.nifty.utility.NiftyUtility.niftyOptionBuyPrice;
+import static com.upstox.production.nifty.utility.NiftyUtility.niftySlPrice;
 
 
 @Component
@@ -41,9 +51,11 @@ public class NiftyOrderHelper {
     private Environment environment;
     @Autowired
     private NiftyOrderMapperRepository niftyOrderMapperRepository;
+    @Autowired
+    private ApplicationMailSender applicationMailSender;
 
     public NiftyOptionChainResponseDTO getOptionChain(NiftyOptionMapping niftyOptionMapping, String token) throws UpstoxException, URISyntaxException, IOException, InterruptedException {
-        log.info("Get option chain details: " +niftyOptionMapping);
+        log.info("Get option chain details: " + niftyOptionMapping);
         HttpClient httpClient = HttpClient.newBuilder().build();
         String nifty = "NSE_INDEX%7CNifty%2050";
         String expiryDate = niftyOptionMapping.getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -69,7 +81,7 @@ public class NiftyOrderHelper {
                     .filter(data -> {
                         NiftyOptionDTO callOptions = data.getCall_options();
                         double ltp = callOptions.getMarket_data().getLtp();
-                        return ltp >= 401.00 && ltp <= 490.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
+                        return ltp >= 401.00 && ltp <= 500.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
                     })
                     .map(NiftyOptionChainDataDTO::getCall_options)
                     .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
@@ -98,7 +110,7 @@ public class NiftyOrderHelper {
                     .filter(data -> {
                         NiftyOptionDTO putOptions = data.getPut_options();
                         double ltp = putOptions.getMarket_data().getLtp();
-                        return ltp >= 401.00 && ltp <= 490.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
+                        return ltp >= 401.00 && ltp <= 500.00 && data.getStrike_price() % 100 == 0; // Check LTP and strike price
                     })
                     .map(NiftyOptionChainDataDTO::getPut_options)
                     .max(Comparator.comparingDouble(o -> o.getMarket_data().getLtp()));
@@ -123,10 +135,7 @@ public class NiftyOrderHelper {
 
     public void placeBuyOrder(NiftyOptionDTO niftyOptionDTO, NiftyOptionMapping niftyOptionMapping, String token) throws IOException, InterruptedException, UnirestException {
         ObjectMapper objectMapper = new ObjectMapper();
-        niftyCurrentInstrument = niftyOptionDTO.getInstrument_key();
-        niftyCurrentOptionTradeHigh = 0.00;
-        niftyTargetTradeStatus = false;
-        // place 1st market order
+        // place market order
         String requestBody = "{"
                 + "\"quantity\": " + niftyOptionMapping.getQuantity() * niftyOptionMapping.getNumberOfLots() + ","
                 + "\"product\": \"D\","
@@ -156,6 +165,7 @@ public class NiftyOrderHelper {
         log.info("Placed order response " + placeOptionBuyOrderResponse.body());
         String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
         if (statusOrderDetails.equalsIgnoreCase("error")) {
+            applicationMailSender.sendMail("There is some error in placing option Buy order please check and do manually", "Placing Option Buy Order Error");
             return;
         }
 
@@ -173,63 +183,13 @@ public class NiftyOrderHelper {
                 .build();
         HttpResponse<String> orderDetailsResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         OrderData placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
-        double averagePrice = 0.00;
-        log.info("Buy order details : " + placedMarketOrderResponse);
 
-        // place initial target order
-        if (placedMarketOrderResponse.getData().getOrderStatus().equalsIgnoreCase("complete")) {
-            averagePrice = placedMarketOrderResponse.getData().getAveragePrice();
-            log.info("Average price : " + averagePrice + " Target point : " + niftyOptionMapping.getProfitPoints());
-            double targetPrice = Math.round((averagePrice + niftyOptionMapping.getProfitPoints()) * 20)/20.00;
-            niftyOptionBuyPrice = averagePrice;
-            niftyOptionInitialTargetPrice = targetPrice;
-            niftyTrailSlPrice = averagePrice - niftyOptionMapping.getStopLossPriceRange();
-            log.info("Nifty Trail SL price : " + niftyTrailSlPrice);
-            log.info("Target Price : " + targetPrice);
-            int quantity = placedMarketOrderResponse.getData().getQuantity()/2;
-            niftyRemainingQuantity = placedMarketOrderResponse.getData().getQuantity()/2;
-
-            String url = "https://api-hft.upstox.com/v2/order/place";
-            // Set up the request body
-            String targetRequestBody = "{"
-                            + "\"quantity\": " + quantity + ","
-                            + "\"product\": \"D\","
-                            + "\"validity\": \"DAY\","
-                            + "\"price\": " + targetPrice + ","
-                            + "\"tag\": \"string\","
-                            + "\"instrument_token\": \"" + niftyOptionDTO.getInstrument_key() + "\","
-                            + "\"order_type\": \"LIMIT\","
-                            + "\"transaction_type\": \"SELL\","
-                            + "\"disclosed_quantity\": 0,"
-                            + "\"trigger_price\": " + targetPrice + ","
-                            + "\"is_amo\": false"
-                            + "}";
-            log.info("Target Order Request : " + targetRequestBody);
-            // Create the HttpClient
-            httpClient = HttpClient.newHttpClient();
-
-            // Create the HttpRequest
-            HttpRequest targetRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", token)
-                    .POST(HttpRequest.BodyPublishers.ofString(targetRequestBody))
-                    .build();
-
-                // Send the request and retrieve the response
-            HttpResponse<String> response = httpClient.send(targetRequest, HttpResponse.BodyHandlers.ofString());
-
-            jsonNodeOrderDetails = objectMapper.readTree(response.body());
-            statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
-            if (statusOrderDetails.equalsIgnoreCase("error")) {
-                return;
-            }
-            OrderData targetorderData = objectMapper.readValue(response.body(), OrderData.class);
-            log.info("Target Order response : " + targetorderData);
-            niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(targetorderData.getData().getOrderId()).orderType("SELL").build());
-        }
-
+        niftyCurrentInstrumentToken = niftyOptionDTO.getInstrument_key();
+        niftyOptionBuyPrice = placedMarketOrderResponse.getData().getAveragePrice();
+        niftySlPrice = niftyOptionBuyPrice - niftyOptionMapping.getStopLossPriceRange() < 0 ?
+                niftyOptionBuyPrice - niftyOptionMapping.getStopLossPriceRange() * (-1) :
+                niftyOptionBuyPrice - niftyOptionMapping.getStopLossPriceRange();
+        currentTradeExpiryDate = niftyOptionMapping.getExpiryDate();
     }
 
     public NiftyLtpResponseDTO fetchCmp(String token) throws IOException, InterruptedException {
@@ -323,33 +283,34 @@ public class NiftyOrderHelper {
         niftyOrderMapperRepository.deleteAll();
     }
 
-    public List<Integer> getCallStrikes(double cmp) {
-        List<Integer> callStrikes = new ArrayList<>();
-        // Starting strike from the nearest multiple of 100
-        for (int strike = (int) (cmp / 100) * 100; strike >= cmp - 100; strike -= 100) {
-            if (strike <= cmp) {
-                callStrikes.add(strike);
-            }
-        }
-        // Ensure the list contains exactly 2 elements
-        while (callStrikes.size() < 2) {
-            callStrikes.add(callStrikes.get(callStrikes.size() - 1) - 100); // Add lower strikes
-        }
-        return callStrikes.subList(0, 2); // Only return the first 2 elements
+    public NiftyLtpResponseDTO fetchNiftyOptionCmp() throws IOException, InterruptedException {
+        String niftyInstrument = niftyCurrentInstrumentToken.replace("|", "%7C");
+        String url = "https://api.upstox.com/v2/market-quote/ltp?instrument_key=" + niftyInstrument;
+        String acceptHeader = "application/json";
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept", acceptHeader)
+                .header("Authorization", omkarSchedulerToken)
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        log.info("Current market price received : " + response.body());
+        return objectMapper.readValue(response.body(), NiftyLtpResponseDTO.class);
     }
 
-    public List<Integer> getPutStrikes(double cmp) {
-        List<Integer> putStrikes = new ArrayList<>();
-        // Starting strike from the nearest multiple of 100
-        for (int strike = (int) (cmp / 100) * 100; strike <= cmp + 100; strike += 100) {
-            if (strike >= cmp) {
-                putStrikes.add(strike);
-            }
-        }
-        // Ensure the list contains exactly 2 elements
-        while (putStrikes.size() < 2) {
-            putStrikes.add(putStrikes.get(putStrikes.size() - 1) + 100); // Add higher strikes
-        }
-        return putStrikes.subList(0, 2); // Only return the first 2 elements
+    public GetPositionResponseDto getAllPositionCall(String token) throws UnirestException, JsonProcessingException {
+        log.info("Fetch the current position we are holding");
+        Unirest.setTimeouts(0, 0);
+        com.mashape.unirest.http.HttpResponse<String> getAllPositionResponse = Unirest.get(environment.getProperty("upstox_url") + environment.getProperty("get_position"))
+                .header("Accept", "application/json")
+                .header("Authorization", token)
+                .asString();
+
+        log.info("Current positions received : " + getAllPositionResponse.getBody());
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(getAllPositionResponse.getBody(), GetPositionResponseDto.class);
     }
 }

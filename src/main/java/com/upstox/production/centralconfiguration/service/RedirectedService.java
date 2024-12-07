@@ -6,14 +6,20 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.dto.UpstoxLoginDto;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
+import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
 import com.upstox.production.centralconfiguration.utility.CentralUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.Optional;
+
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.authenticatedUser;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradingUserClientId;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradingUserClientSecret;
 
 @Service
 @PropertySource("classpath:data.properties")
@@ -26,28 +32,31 @@ public class RedirectedService {
     private UpstoxLoginRepository upstoxLoginRepository;
 
 
-
-    public UpstoxLogin redirctedUrl(String code) throws IOException, UnirestException {
-        HttpResponse<JsonNode> response = Unirest.post("https://api.upstox.com/v2/login/authorization/token")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("Accept", "application/json")
-                .field("code", code)
-                .field("client_id", environment.getProperty("client_id"))
-                .field("client_secret", environment.getProperty("client_secrete"))
-                .field("redirect_uri", environment.getProperty("redirect_url"))
-                .field("grant_type", "authorization_code").asJson();
-        // Print the response
-        UpstoxLoginDto upstoxLoginDto = buildUpstoxLoginDtoFromHttpResponse(response.getBody());
-        Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(upstoxLoginDto.getEmail());
-        UpstoxLogin upstoxLogin = null;
-        if (optionalUpstoxLogin.isPresent()) {
-            upstoxLogin = optionalUpstoxLogin.get();
-            upstoxLogin.setAccess_token(upstoxLoginDto.getAccess_token());
+    public UpstoxLogin redirctedUrl(String code) throws IOException, UnirestException, UpstoxException {
+        if (authenticatedUser) {
+            HttpResponse<JsonNode> response = Unirest.post("https://api.upstox.com/v2/login/authorization/token")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("Accept", "application/json")
+                    .field("code", code)
+                    .field("client_id", tradingUserClientId)
+                    .field("client_secret", tradingUserClientSecret)
+                    .field("redirect_uri", environment.getProperty("redirect_url"))
+                    .field("grant_type", "authorization_code").asJson();
+            // Print the response
+            UpstoxLoginDto upstoxLoginDto = buildUpstoxLoginDtoFromHttpResponse(response.getBody());
+            Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(upstoxLoginDto.getEmail());
+            UpstoxLogin upstoxLogin = null;
+            if (optionalUpstoxLogin.isPresent()) {
+                upstoxLogin = optionalUpstoxLogin.get();
+                upstoxLogin.setAccess_token(upstoxLoginDto.getAccess_token());
+            } else {
+                upstoxLogin = buildUpstoxLogin(upstoxLoginDto);
+            }
+            CentralUtility.atulSchedulerToken = "Bearer " + upstoxLogin.getAccess_token();
+            return upstoxLoginRepository.save(upstoxLogin);
         } else {
-            upstoxLogin = buildUpstoxLogin(upstoxLoginDto);
+            throw new UpstoxException("User is not authorized to access!!!");
         }
-        CentralUtility.atulSchedulerToken = "Bearer " + upstoxLogin.getAccess_token();
-        return upstoxLoginRepository.save(upstoxLogin);
     }
 
     public UpstoxLoginDto buildUpstoxLoginDtoFromHttpResponse(JsonNode response) {

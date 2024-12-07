@@ -2,23 +2,18 @@ package com.upstox.production.nifty.utility;
 
 import lombok.experimental.UtilityClass;
 
+import java.time.LocalDate;
+
 @UtilityClass
 public class NiftyUtility {
 
-    public static boolean niftyCallOptionFlag = false;
-    public static boolean niftyPutOptionFlag = false;
-    public static int niftyMorningTradeCounter = 0;
     public static boolean isNiftyMainExecutionRunning = false;
-    public static boolean trailSlOrderRunning = false;
-    public static boolean ltpPriceFetching = false;
-    public static double niftyOptionLtp = 0.00;
-    public static double niftyCurrentOptionTradeHigh = 0.00;
     public static double niftyOptionBuyPrice = 0.00;
-    public static double niftyOptionInitialTargetPrice = 0.00;
-    public static double niftyOptionHighPrice = 0.00;
-    public static double niftyTrailSlPrice = 0.00;
-    public static int niftyRemainingQuantity = 0;
-    public static String niftyCurrentInstrument = "";
-    public static boolean niftyTargetTradeStatus = false;
+    public static double niftySlPrice = 0.00;
+    public static String niftyCurrentInstrumentToken = "";
+    public static double maxDrawDown = 0.00;
+    public static LocalDate currentTradeExpiryDate = LocalDate.of(2000, 01, 01);
+    public static String currentTradeType = "";
+    public static String currentParentInstrument;
 
 }
