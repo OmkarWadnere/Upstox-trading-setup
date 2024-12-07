@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
@@ -24,7 +25,7 @@ public class RSAGenerator {
     public static String encrypt(String plainText, PublicKey publicKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");  // Use PKCS1Padding or OAEP
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] encryptedBytes = cipher.doFinal(plainText.getBytes("UTF-8"));
+        byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(encryptedBytes);  // Encode to Base64 for transmission
     }
 
@@ -34,7 +35,7 @@ public class RSAGenerator {
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] decodedBytes = Base64.getDecoder().decode(cipherText);  // Decode from Base64
         byte[] decryptedBytes = cipher.doFinal(decodedBytes);
-        return new String(decryptedBytes, "UTF-8");  // Decode to string
+        return new String(decryptedBytes, StandardCharsets.UTF_8);  // Decode to string
     }
 
     // Method to save private key to a file

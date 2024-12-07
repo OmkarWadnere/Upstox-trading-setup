@@ -1,6 +1,5 @@
 package com.upstox;
 
-import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.security.SHA256Generator;
 import com.upstox.production.centralconfiguration.utility.CentralUtility;
 import jakarta.annotation.PostConstruct;
@@ -11,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 
 import static com.upstox.production.centralconfiguration.security.RSAGenerator.generateKeyPair;
 
@@ -33,7 +31,7 @@ public class UpstoxTradingSetupApplication {
 
     }
 
-    public static void main(String[] args) throws NoSuchAlgorithmException, UpstoxException {
+    public static void main(String[] args) {
         SpringApplication.run(UpstoxTradingSetupApplication.class, args);
     }
 

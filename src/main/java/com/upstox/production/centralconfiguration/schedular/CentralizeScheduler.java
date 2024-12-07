@@ -37,7 +37,7 @@ public class CentralizeScheduler {
     }
 
     @Scheduled(cron = "0 15 7 * * MON-FRI")
-    public void userDetails() throws UpstoxException {
+    public void userDetails() {
         try {
             Optional<User> tradeAccess = userRepository.findByUserAccessType(UserAccess.TRADE_ACCESS.getAccessType());
             Optional<User> fetchDataAccess = userRepository.findByUserAccessType(UserAccess.FETCH_DATA_ACCESS.getAccessType());

@@ -12,7 +12,7 @@ public class NiftyUtility {
     public static double niftySlPrice = 0.00;
     public static String niftyCurrentInstrumentToken = "";
     public static double maxDrawDown = 0.00;
-    public static LocalDate currentTradeExpiryDate = LocalDate.of(2000, 01, 01);
+    public static LocalDate currentTradeExpiryDate = LocalDate.of(2000, 1, 1);
     public static String currentTradeType = "";
     public static String currentParentInstrument;
 

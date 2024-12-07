@@ -1,34 +1,20 @@
 package com.upstox.production.centralconfiguration.exceptionHander;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ErrorInfo {
     private String errorMessage;
     private Integer errorCode;
     private LocalDateTime timeStamp;
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public Integer getErrorCode() {
-        return errorCode;
-    }
-
-    public void setErrorCode(Integer errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public LocalDateTime getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setTimeStamp(LocalDateTime timeStamp) {
-        this.timeStamp = timeStamp;
-    }
-
 }
