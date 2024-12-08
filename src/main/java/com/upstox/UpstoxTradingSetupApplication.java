@@ -24,7 +24,7 @@ public class UpstoxTradingSetupApplication {
 
     @PostConstruct
     public void init() throws Exception {
-        CentralUtility.nonMarketHourCode = sha256Generator.generateRandomSHA256(); // Initialize static variable after DI
+        CentralUtility.nonMarketHourCode = sha256Generator.generateRandomSHA256();
         KeyPair keyPair = generateKeyPair();
         CentralUtility.privateKey = keyPair.getPrivate();
         CentralUtility.publicKey = keyPair.getPublic();

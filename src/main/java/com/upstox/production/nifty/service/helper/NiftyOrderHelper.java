@@ -149,7 +149,7 @@ public class NiftyOrderHelper {
                 + "\"trigger_price\": 0,"
                 + "\"is_amo\": false"
                 + "}";
-        log.info("Request data :  " + requestBody);
+        log.info("Request data : {}", requestBody);
         HttpClient httpClient = HttpClient.newHttpClient();
 
         String orderUrl = environment.getProperty("upstox_url") + environment.getProperty("place_order");
@@ -162,7 +162,7 @@ public class NiftyOrderHelper {
                 .build();
         HttpResponse<String> placeOptionBuyOrderResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         JsonNode jsonNodeOrderDetails = objectMapper.readTree(placeOptionBuyOrderResponse.body());
-        log.info("Placed order response " + placeOptionBuyOrderResponse.body());
+        log.info("Placed order response : {}", placeOptionBuyOrderResponse.body());
         String statusOrderDetails = jsonNodeOrderDetails.get("status").asText();
         if (statusOrderDetails.equalsIgnoreCase("error")) {
             applicationMailSender.sendMail("There is some error in placing option Buy order please check and do manually", "Placing Option Buy Order Error");
@@ -170,7 +170,7 @@ public class NiftyOrderHelper {
         }
 
         OrderData orderData = objectMapper.readValue(placeOptionBuyOrderResponse.body(), OrderData.class);
-        log.info("Order placed data : " + orderData);
+        log.info("Order placed data : {}", orderData);
         niftyOrderMapperRepository.save(NiftyOrderMapper.builder().orderId(orderData.getData().getOrderId()).orderType("BUY").build());
 
         // get average price of market order
@@ -183,12 +183,13 @@ public class NiftyOrderHelper {
                 .build();
         HttpResponse<String> orderDetailsResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         OrderData placedMarketOrderResponse = objectMapper.readValue(orderDetailsResponse.body(), OrderData.class);
-
+        log.info("Placed Market Order Response : {}", placedMarketOrderResponse.toString());
         niftyCurrentInstrumentToken = niftyOptionDTO.getInstrument_key();
         niftyOptionBuyPrice = placedMarketOrderResponse.getData().getAveragePrice();
         niftySlPrice = niftyOptionBuyPrice - niftyOptionMapping.getStopLossPriceRange() < 0 ?
                 niftyOptionBuyPrice - niftyOptionMapping.getStopLossPriceRange() * (-1) :
                 niftyOptionBuyPrice - niftyOptionMapping.getStopLossPriceRange();
+        log.info("Stoploss Price Calculated is : {}", niftySlPrice);
         currentTradeExpiryDate = niftyOptionMapping.getExpiryDate();
     }
 

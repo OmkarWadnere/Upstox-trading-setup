@@ -13,9 +13,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static com.upstox.production.centralconfiguration.security.RSAGenerator.decrypt;
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.fetchDataUserClientId;
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.fetchDataUserClientSecret;
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.fetchDataUserEmailId;
+import static com.upstox.production.centralconfiguration.utility.CentralUtility.privateKey;
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradingUserClientId;
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradingUserClientSecret;
 import static com.upstox.production.centralconfiguration.utility.CentralUtility.tradingUserEmailId;
@@ -45,16 +47,15 @@ public class CentralizeScheduler {
                 applicationMailSender.sendMail("Please check the all user details you have provided!!!", "Incorrect Users Information");
                 throw new UpstoxException("Please check the all user details we have provided!!!");
             }
-            tradingUserClientId = tradeAccess.get().getClientId();
-            fetchDataUserClientId = fetchDataAccess.get().getClientId();
-            tradingUserClientSecret = tradeAccess.get().getClientSecrete();
-            fetchDataUserClientSecret = fetchDataAccess.get().getClientSecrete();
-            tradingUserEmailId = tradeAccess.get().getEmailId();
-            fetchDataUserEmailId = fetchDataAccess.get().getEmailId();
+            tradingUserClientId = decrypt(tradeAccess.get().getClientId(), privateKey);
+            fetchDataUserClientId = decrypt(fetchDataAccess.get().getClientId(), privateKey);
+            tradingUserClientSecret = decrypt(tradeAccess.get().getClientSecrete(), privateKey);
+            fetchDataUserClientSecret = decrypt(fetchDataAccess.get().getClientSecrete(), privateKey);
+            tradingUserEmailId = decrypt(tradeAccess.get().getEmailId(), privateKey);
+            fetchDataUserEmailId = decrypt(fetchDataAccess.get().getEmailId(), privateKey);
         } catch (Exception exception) {
             applicationMailSender.sendMail("Please check the all user details you have provided!!!", "Incorrect Users Information");
         }
-
     }
 
     @Scheduled(cron = "0 31 15 * * MON-FRI")

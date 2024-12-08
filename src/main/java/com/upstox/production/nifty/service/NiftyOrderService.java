@@ -7,7 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.dto.OrderRequestDto;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
 import com.upstox.production.centralconfiguration.mails.ApplicationMailSender;
-import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
+import com.upstox.production.centralconfiguration.repository.TradeAccessUpstoxLoginRepository;
 import com.upstox.production.nifty.dto.NiftyOptionChainResponseDTO;
 import com.upstox.production.nifty.dto.NiftyOptionDTO;
 import com.upstox.production.nifty.entity.NiftyOptionMapping;
@@ -49,9 +49,6 @@ import static com.upstox.production.nifty.utility.NiftyUtility.maxDrawDown;
 public class NiftyOrderService {
 
     private static final Log log = LogFactory.getLog(NiftyOrderService.class);
-
-    private static final Double MULTIPLIER = 0.05;
-
     private final BlockingQueue<OrderRequestDto> requestQueue = new LinkedBlockingQueue<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -59,7 +56,7 @@ public class NiftyOrderService {
     private Environment environment;
 
     @Autowired
-    private UpstoxLoginRepository upstoxLoginRepository;
+    private TradeAccessUpstoxLoginRepository tradeAccessUpstoxLoginRepository;
 
     @Autowired
     private NiftyOptionMappingRepository niftyOptionMappingRepository;
@@ -99,7 +96,6 @@ public class NiftyOrderService {
 
         // Process order Request Data
         OrderRequestDto orderRequestDto = processOrderRequestData(requestData);
-
         Optional<NiftyOptionMapping> optionalNiftyFutureMapping = niftyOptionMappingRepository.findByInstrumentToken(orderRequestDto.getInstrument_name());
         if (optionalNiftyFutureMapping.isEmpty()) {
             isNiftyMainExecutionRunning = false;
@@ -107,7 +103,7 @@ public class NiftyOrderService {
             throw new UpstoxException("There is no future mapping for : " + orderRequestDto.getInstrument_name());
         }
         if (atulSchedulerToken.isEmpty() || atulSchedulerToken.length() == 0) {
-            atulSchedulerToken = "Bearer " + upstoxLoginRepository.findByEmail(tradingUserEmailId).get().getAccess_token();
+            atulSchedulerToken = "Bearer " + tradeAccessUpstoxLoginRepository.findByEmail(tradingUserEmailId).get().getAccess_token();
         }
         log.info("Option Mapping details : " + optionalNiftyFutureMapping);
         log.info("order requestData data : " + orderRequestDto);
@@ -126,7 +122,6 @@ public class NiftyOrderService {
 
     private synchronized void processOrder(OrderRequestDto orderRequestDto)
             throws UnirestException, IOException, URISyntaxException, InterruptedException, UpstoxException {
-        LocalTime currentTime = LocalTime.now();
         NiftyOptionDTO niftyOptionDTO = null;
         Optional<NiftyOptionMapping> optionalNiftyOptionMapping =
                 niftyOptionMappingRepository.findByInstrumentToken(orderRequestDto.getInstrument_name());
@@ -154,6 +149,7 @@ public class NiftyOrderService {
         } else if (orderRequestDto.getTransaction_type().equals(BUY_EXIT.getOrderType())) {
             maxDrawDown = 0.00;
             currentTradeType = "";
+            log.info("Buy Exit order process initiated");
             niftyOrderHelper.cancelAllOpenOrders();
             niftyOrderHelper.squareOffAllPositions();
         } else if (orderRequestDto.getTransaction_type().equals(SELL_ENTRY.getOrderType())) {
@@ -179,6 +175,7 @@ public class NiftyOrderService {
         } else if (orderRequestDto.getTransaction_type().equals(SELL_EXIT.getOrderType())) {
             maxDrawDown = 0.00;
             currentTradeType = "";
+            log.info("Sell Exit order process initiated");
             niftyOrderHelper.cancelAllOpenOrders();
             niftyOrderHelper.squareOffAllPositions();
         } else {

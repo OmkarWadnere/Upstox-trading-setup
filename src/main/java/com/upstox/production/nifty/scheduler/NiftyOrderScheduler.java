@@ -7,7 +7,7 @@ import com.upstox.production.centralconfiguration.dto.GetPositionDataDto;
 import com.upstox.production.centralconfiguration.dto.GetPositionResponseDto;
 import com.upstox.production.centralconfiguration.dto.OrderData;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
-import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
+import com.upstox.production.centralconfiguration.repository.TradeAccessUpstoxLoginRepository;
 import com.upstox.production.nifty.dto.NiftyLtpResponseDTO;
 import com.upstox.production.nifty.dto.NiftyOptionChainResponseDTO;
 import com.upstox.production.nifty.dto.NiftyOptionDTO;
@@ -59,7 +59,7 @@ public class NiftyOrderScheduler {
     @Autowired
     private Environment environment;
     @Autowired
-    private UpstoxLoginRepository upstoxLoginRepository;
+    private TradeAccessUpstoxLoginRepository tradeAccessUpstoxLoginRepository;
     @Autowired
     private NiftyOrderHelper niftyOrderHelper;
     @Autowired

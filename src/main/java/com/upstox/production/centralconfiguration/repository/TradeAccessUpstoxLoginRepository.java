@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UpstoxLoginRepository extends CrudRepository<UpstoxLogin, Integer> {
+public interface TradeAccessUpstoxLoginRepository extends CrudRepository<UpstoxLogin, Integer> {
 
     Optional<UpstoxLogin> findByEmail(String email);
 }

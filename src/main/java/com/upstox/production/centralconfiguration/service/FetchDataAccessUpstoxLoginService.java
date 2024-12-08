@@ -1,10 +1,10 @@
-package com.upstox.production.omkarLogin.service;
+package com.upstox.production.centralconfiguration.service;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
-import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
+import com.upstox.production.centralconfiguration.repository.TradeAccessUpstoxLoginRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -15,10 +15,10 @@ import static com.upstox.production.centralconfiguration.utility.CentralUtility.
 
 @Service
 @PropertySource("classpath:data.properties")
-public class OmkarUpstoxLoginService {
+public class FetchDataAccessUpstoxLoginService {
 
     @Autowired
-    private UpstoxLoginRepository upstoxLoginRepository;
+    private TradeAccessUpstoxLoginRepository tradeAccessUpstoxLoginRepository;
     @Autowired
     private Environment environment;
 

@@ -1,4 +1,4 @@
-package com.upstox.production.omkarLogin.service;
+package com.upstox.production.centralconfiguration.service;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -7,7 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.dto.UpstoxLoginDto;
 import com.upstox.production.centralconfiguration.entity.UpstoxLogin;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
-import com.upstox.production.centralconfiguration.repository.UpstoxLoginRepository;
+import com.upstox.production.centralconfiguration.repository.TradeAccessUpstoxLoginRepository;
 import com.upstox.production.centralconfiguration.utility.CentralUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
@@ -23,13 +23,13 @@ import static com.upstox.production.centralconfiguration.utility.CentralUtility.
 
 @Service
 @PropertySource("classpath:data.properties")
-public class OmkarRedirectedService {
+public class FetchDataAccessRedirectedService {
 
     @Autowired
     private Environment environment;
 
     @Autowired
-    private UpstoxLoginRepository upstoxLoginRepository;
+    private TradeAccessUpstoxLoginRepository tradeAccessUpstoxLoginRepository;
 
 
     public UpstoxLogin redirctedUrl(String code) throws IOException, UnirestException, UpstoxException {
@@ -44,7 +44,7 @@ public class OmkarRedirectedService {
                     .field("grant_type", "authorization_code").asJson();
             // Print the response
             UpstoxLoginDto upstoxLoginDto = buildUpstoxLoginDtoFromHttpResponse(response.getBody());
-            Optional<UpstoxLogin> optionalUpstoxLogin = upstoxLoginRepository.findByEmail(upstoxLoginDto.getEmail());
+            Optional<UpstoxLogin> optionalUpstoxLogin = tradeAccessUpstoxLoginRepository.findByEmail(upstoxLoginDto.getEmail());
             UpstoxLogin upstoxLogin = null;
             if (optionalUpstoxLogin.isPresent()) {
                 upstoxLogin = optionalUpstoxLogin.get();
@@ -53,7 +53,7 @@ public class OmkarRedirectedService {
                 upstoxLogin = buildUpstoxLogin(upstoxLoginDto);
             }
             CentralUtility.omkarSchedulerToken = "Bearer " + upstoxLogin.getAccess_token();
-            return upstoxLoginRepository.save(upstoxLogin);
+            return tradeAccessUpstoxLoginRepository.save(upstoxLogin);
         } else {
             throw new UpstoxException("User is not authorized to access!!!");
         }
