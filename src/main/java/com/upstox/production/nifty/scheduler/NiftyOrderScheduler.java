@@ -76,7 +76,7 @@ public class NiftyOrderScheduler {
         niftyOrderMapperRepository.deleteAll();
     }
 
-    @Scheduled(cron = "0 0 6 * * MON-FRI")
+    @Scheduled(cron = "0 30 8 * * MON-FRI")
     public void autoExpirySwitching() throws UpstoxException {
         Iterable<NiftyOptionMapping> niftyOptionMappingIterable = niftyOptionMappingRepository.findAll();
         List<NiftyOptionMapping> niftyOptionMappings = convertIterableToListOptionMapping(niftyOptionMappingIterable);
