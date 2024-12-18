@@ -2,6 +2,7 @@ package com.upstox.production.nifty.controller;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.upstox.production.centralconfiguration.excpetion.UpstoxException;
+import com.upstox.production.centralconfiguration.mails.ApplicationMailSender;
 import com.upstox.production.nifty.service.NiftyOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
@@ -28,6 +29,8 @@ public class NiftyOrderController {
 
     @Autowired
     private NiftyOrderService niftyOrderService;
+    @Autowired
+    private ApplicationMailSender applicationMailSender;
 
     @PostMapping("/tradingView")
     public void NiftyOrderExecution(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
@@ -36,9 +39,11 @@ public class NiftyOrderController {
             niftyOrderService.addOrderToQueue(niftyPayload);
         } else if (tradeSwitch && LocalTime.now().isAfter(LocalTime.of(15, 30, 1)) && permissionToLoginForNonMarketHours) {
             niftyOrderService.addOrderToQueue(niftyPayload);
-        } else if (LocalTime.now().isAfter(LocalTime.of(15, 30, 01)) && !permissionToLoginForNonMarketHours) {
+        } else if (LocalTime.now().isAfter(LocalTime.of(15, 30, 1)) && !permissionToLoginForNonMarketHours) {
+            applicationMailSender.sendMail("You don't have permission to login after market hours please take permission first", "Don't have Permission");
             throw new UpstoxException("You don't have permission to login after market hours please take permission first");
         } else {
+            applicationMailSender.sendMail("!!!Someone has closed trading for remaining day or you are not authenticated user to login!!!", "Please Authenticate  YourSelf");
             log.info("!!!Someone has closed trading for remaining day or you are not authenticated user to login!!!");
         }
         isNiftyMainExecutionRunning = false;
